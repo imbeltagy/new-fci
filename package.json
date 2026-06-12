@@ -1,0 +1,14 @@
+{
+  "name": "new-fci",
+  "private": true,
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "start": "turbo run start"
+  },
+  "packageManager": "pnpm@11.1.2",
+  "devDependencies": {
+    "turbo": "^2.5.0"
+  }
+}

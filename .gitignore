@@ -1,0 +1,20 @@
+# dependencies
+node_modules/
+
+# builds
+.next/
+dist/
+out/
+
+# turbo
+.turbo/
+
+# generated
+apps/server/src/swagger/swagger-output.json
+
+# env
+.env*.local
+
+# misc
+.DS_Store
+*.log
