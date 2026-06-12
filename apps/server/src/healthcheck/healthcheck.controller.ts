@@ -1,12 +1,10 @@
-import { Router, type Request, type Response } from "express";
+import type { Request, Response } from "express";
 
 import { HealthcheckService } from "./healthcheck.service";
 
 const healthcheckService = new HealthcheckService();
 
-export const healthcheckRouter = Router();
-
-healthcheckRouter.get("/", async (_req: Request, res: Response) => {
+export async function getStatus(_req: Request, res: Response) {
   const status = await healthcheckService.getStatus();
   res.status(status.status === "ok" ? 200 : 503).json(status);
-});
+}

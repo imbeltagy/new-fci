@@ -6,3 +6,73 @@ datasource db {
 generator client {
   provider = "prisma-client-js"
 }
+
+enum Role {
+  student
+  teacher
+  sub_teacher @map("sub-teacher")
+  it
+  superadmin
+}
+
+model User {
+  id                 String       @id @default(uuid())
+  email              String       @unique
+  passwordHash       String
+  role               Role
+  name               String
+  avatarUrl          String?
+  coverUrl           String?
+  isActive           Boolean      @default(true)
+  mustChangePassword Boolean      @default(true)
+  sendOnce           Boolean      @default(false)
+  whatsapp           String?
+  accessGroupId      String?
+  accessGroup        AccessGroup? @relation(fields: [accessGroupId], references: [id], onDelete: SetNull)
+  joinYearId         String?
+  majorId            String?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  passwordResetTokens PasswordResetToken[]
+
+  @@map("users")
+}
+
+model AccessGroup {
+  id          String       @id @default(uuid())
+  name        String
+  description String?
+  permissions Permission[]
+  users       User[]
+
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@map("access_groups")
+}
+
+model Permission {
+  id            String      @id @default(uuid())
+  key           String
+  accessGroupId String
+  accessGroup   AccessGroup @relation(fields: [accessGroupId], references: [id], onDelete: Cascade)
+
+  createdAt     DateTime    @default(now())
+
+  @@unique([key, accessGroupId])
+  @@index([accessGroupId])
+  @@map("permissions")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  tokenHash String    @unique
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@map("password_reset_tokens")
+}
