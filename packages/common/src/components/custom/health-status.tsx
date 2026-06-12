@@ -31,8 +31,8 @@ export function HealthStatus({ data }: { data: HealthcheckResponse }) {
       </CardHeader>
       <CardContent className="flex flex-col gap-2 text-sm">
         <div className="flex items-center justify-between">
-          <span>MongoDB</span>
-          {serviceBadge(data.services.mongo)}
+          <span>PostgreSQL</span>
+          {serviceBadge(data.services.postgres)}
         </div>
         <div className="flex items-center justify-between">
           <span>Redis</span>

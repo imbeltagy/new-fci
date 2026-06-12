@@ -3,7 +3,7 @@ export interface HealthcheckResponse {
   timestamp: string;
   uptime: number;
   services: {
-    mongo: "up" | "down";
+    postgres: "up" | "down";
     redis: "up" | "down";
   };
 }

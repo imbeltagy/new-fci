@@ -8,7 +8,7 @@ Turborepo + pnpm monorepo. **Always use pnpm, never npm/yarn.**
 | --- | --- | --- | --- |
 | client | `apps/client` | Next.js 16 (App Router, Tailwind v4, shadcn) | 3000 |
 | admin | `apps/admin` | Next.js 16 (App Router, Tailwind v4, shadcn) | 3001 |
-| server | `apps/server` | Express 5 + TypeScript, Mongoose, ioredis | 4000 |
+| server | `apps/server` | Express 5 + TypeScript, Prisma + PostgreSQL, ioredis | 4000 |
 
 `packages/common` (`@repo/common`) is the shared package for the two Next.js apps.
 The server is intentionally standalone — it shares nothing with `@repo/common`.
@@ -31,8 +31,9 @@ Subpath imports are defined in `packages/common/package.json` `exports`, e.g.
 
 ## Server layout (`apps/server/src`)
 
-- `index.ts` — loads `.env`, connects Mongo + Redis, then starts Express
-- `db/mongo.ts`, `db/redis.ts` — one file per database, each exports its connect function
+- `index.ts` — loads `.env`, connects PostgreSQL + Redis, then starts Express
+- `db/postgres.ts`, `db/redis.ts` — one file per database; `postgres.ts` exports `connectPostgres` and `getPrismaClient`
+- `prisma/schema.prisma` — Prisma schema (datasource + generator; models added per feature)
 - `<feature>/` — `*.controller.ts` (Express router), `*.service.ts`, `*.repository.ts` (see `healthcheck/`)
 - `swagger/generate.ts` — auto-generates the OpenAPI spec with `swagger-autogen` by scanning
   the routes (no manual annotations). Runs automatically before `dev` and `build`

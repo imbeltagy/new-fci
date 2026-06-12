@@ -20,6 +20,7 @@ ENV NODE_ENV=production
 COPY --from=pruner /app/out/json/ .
 RUN pnpm install --prod --frozen-lockfile
 COPY --from=builder /app/apps/server/dist ./apps/server/dist
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
 WORKDIR /app/apps/server
 EXPOSE 4000

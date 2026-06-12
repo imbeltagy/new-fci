@@ -1,12 +1,10 @@
-import mongoose from "mongoose";
-
+import { getPrismaClient } from "../db/postgres";
 import { getRedisClient } from "../db/redis";
 
 export class HealthcheckRepository {
-  async pingMongo(): Promise<boolean> {
+  async pingPostgres(): Promise<boolean> {
     try {
-      if (!mongoose.connection.db) return false;
-      await mongoose.connection.db.admin().command({ ping: 1 });
+      await getPrismaClient().$queryRaw`SELECT 1`;
       return true;
     } catch {
       return false;

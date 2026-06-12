@@ -3,7 +3,7 @@ import cors from "cors";
 import express from "express";
 import swaggerUi from "swagger-ui-express";
 
-import { connectMongo } from "./db/mongo";
+import { connectPostgres } from "./db/postgres";
 import { connectRedis } from "./db/redis";
 import { healthcheckRouter } from "./healthcheck/healthcheck.controller";
 import swaggerDocument from "./swagger/swagger-output.json";
@@ -19,7 +19,7 @@ app.use("/healthcheck", healthcheckRouter);
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 const start = async () => {
-  await connectMongo();
+  await connectPostgres();
   await connectRedis();
 
   app.listen(PORT, () => {

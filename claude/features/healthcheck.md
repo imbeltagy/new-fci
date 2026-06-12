@@ -11,7 +11,7 @@ Status: built. The end-to-end reference feature.
   API health on load.
 - While checking: a "Checking API health..." message is shown.
 - On success: a status card shows overall status (`ok` / `degraded`), per-service state for
-  MongoDB and Redis, and the server uptime.
-- Status is `ok` only when **both** MongoDB and Redis respond; otherwise `degraded`
+  PostgreSQL and Redis, and the server uptime.
+- Status is `ok` only when **both** PostgreSQL and Redis respond; otherwise `degraded`
   (HTTP 503 from the API).
 - If the API is unreachable: the page shows an error message instead of the card.

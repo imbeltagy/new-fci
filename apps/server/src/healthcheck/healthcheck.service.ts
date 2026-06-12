@@ -5,7 +5,7 @@ export interface HealthcheckStatus {
   timestamp: string;
   uptime: number;
   services: {
-    mongo: "up" | "down";
+    postgres: "up" | "down";
     redis: "up" | "down";
   };
 }
@@ -14,17 +14,17 @@ export class HealthcheckService {
   constructor(private readonly repository = new HealthcheckRepository()) {}
 
   async getStatus(): Promise<HealthcheckStatus> {
-    const [mongoUp, redisUp] = await Promise.all([
-      this.repository.pingMongo(),
+    const [postgresUp, redisUp] = await Promise.all([
+      this.repository.pingPostgres(),
       this.repository.pingRedis(),
     ]);
 
     return {
-      status: mongoUp && redisUp ? "ok" : "degraded",
+      status: postgresUp && redisUp ? "ok" : "degraded",
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
       services: {
-        mongo: mongoUp ? "up" : "down",
+        postgres: postgresUp ? "up" : "down",
         redis: redisUp ? "up" : "down",
       },
     };
