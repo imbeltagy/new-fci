@@ -30,6 +30,43 @@ Then import it via the package subpath:
 import { Button } from "@repo/common/components/ui/button";
 ```
 
+## Database Setup
+
+### Run Migrations
+
+Apply pending Prisma migrations:
+
+```bash
+docker compose exec server pnpm db:migrate
+```
+
+### Reset Database
+
+If your local database is out of sync with the migration history, reset it and reapply all migrations:
+
+```bash
+docker compose exec server npx prisma migrate reset
+```
+
+⚠️ This will delete all data in the database.
+
+### Seed Database
+
+Populate the database with development seed data:
+
+```bash
+docker compose exec server node dist/seed/seed.js
+```
+
+### Full Reset Workflow
+
+For a completely fresh database:
+
+```bash
+docker compose exec server npx prisma migrate reset
+docker compose exec server node dist/seed/seed.js
+```
+
 ## More
 
 See [CLAUDE.md](./CLAUDE.md) for the full structure, commands, env vars, and conventions.
