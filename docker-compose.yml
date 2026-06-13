@@ -26,10 +26,14 @@ services:
     restart: unless-stopped
     ports:
       - "4000:4000"
+    env_file:
+      - apps/server/.env
     environment:
       PORT: 4000
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/new_fci
       REDIS_URL: redis://redis:6379
+      CLIENT_URL: ${CLIENT_URL}
+      ADMIN_URL: ${ADMIN_URL}
     depends_on:
       - postgres
       - redis
@@ -39,7 +43,10 @@ services:
       context: .
       dockerfile: apps/client/Dockerfile
       args:
-        NEXT_PUBLIC_API_BASE_URL: http://localhost:4000
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
+        NEXT_PUBLIC_AUTH_TYPE: jwt
+    env_file:
+      - apps/client/.env
     restart: unless-stopped
     ports:
       - "3000:3000"
@@ -51,7 +58,10 @@ services:
       context: .
       dockerfile: apps/admin/Dockerfile
       args:
-        NEXT_PUBLIC_API_BASE_URL: http://localhost:4000
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
+        NEXT_PUBLIC_AUTH_TYPE: session
+    env_file:
+      - apps/admin/.env
     restart: unless-stopped
     ports:
       - "3001:3001"

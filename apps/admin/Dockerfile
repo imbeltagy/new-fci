@@ -14,6 +14,8 @@ RUN pnpm install --frozen-lockfile
 COPY --from=pruner /app/out/full/ .
 ARG NEXT_PUBLIC_API_BASE_URL
 ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
+ARG NEXT_PUBLIC_AUTH_TYPE
+ENV NEXT_PUBLIC_AUTH_TYPE=$NEXT_PUBLIC_AUTH_TYPE
 RUN pnpm --filter admin build
 
 FROM node:24-alpine AS runner
