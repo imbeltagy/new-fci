@@ -1,9 +1,24 @@
-import type { ReactNode } from "react";
+"use client";
+
+import { useEffect, type ReactNode } from "react";
+
+import { useAuthStore } from "@repo/common/stores/auth.store";
+
+import { BottomNav } from "@/components/layout/bottom-nav";
+import { MainHeader } from "@/components/layout/main-header";
 
 export default function MainLayout({ children }: { children: ReactNode }) {
+  const initAuth = useAuthStore((s) => s.initAuth);
+
+  useEffect(() => {
+    initAuth();
+  }, [initAuth]);
+
   return (
-    <div className="min-h-screen bg-background">
-      <main className="mx-auto max-w-4xl px-4 py-8">{children}</main>
+    <div className="min-h-dvh">
+      <MainHeader />
+      <main className="px-4 pt-14 pb-16">{children}</main>
+      <BottomNav />
     </div>
   );
 }

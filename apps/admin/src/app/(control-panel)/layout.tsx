@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect } from "react";
+
 import { Toaster } from "@repo/common/components/ui/sonner";
 import { useAuthStore } from "@repo/common/stores/auth.store";
+
 import { Sidebar } from "@/components/control-panel/sidebar";
+import { TopBar, TOP_BAR_HEIGHT } from "@/components/control-panel/top-bar";
 
 export default function ControlPanelLayout({
   children,
@@ -17,10 +20,14 @@ export default function ControlPanelLayout({
   }, [initAuth]);
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="min-h-screen">
       <Sidebar />
-      <main className="flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-6xl space-y-6 p-8">{children}</div>
+      <TopBar />
+      <main
+        className="ml-64 px-8"
+        style={{ paddingTop: TOP_BAR_HEIGHT + 24 }}
+      >
+        <div className="mx-auto max-w-screen-2xl space-y-6 pb-8">{children}</div>
       </main>
       <Toaster richColors />
     </div>
