@@ -13,6 +13,7 @@ COPY --from=pruner /app/out/json/ .
 RUN pnpm install --frozen-lockfile
 COPY --from=pruner /app/out/full/ .
 RUN pnpm --filter server build
+RUN pnpm --filter server exec tsc -p tsconfig.seed.json
 
 FROM base AS runner
 WORKDIR /app

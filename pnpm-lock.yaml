@@ -184,6 +184,9 @@ importers:
       swagger-ui-express:
         specifier: ^5.0.1
         version: 5.0.1(express@5.2.1)
+      tsx:
+        specifier: ^4.22.4
+        version: 4.22.4
     devDependencies:
       '@types/bcrypt':
         specifier: ^5.0.2
@@ -218,9 +221,6 @@ importers:
       swagger-autogen:
         specifier: ^2.23.7
         version: 2.23.7
-      tsx:
-        specifier: ^4.22.4
-        version: 4.22.4
       typescript:
         specifier: ^5.9.3
         version: 5.9.3

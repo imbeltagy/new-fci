@@ -9,7 +9,7 @@
     "swagger": "tsx src/swagger/generate.ts",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:seed": "prisma db seed"
+    "db:seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1067.0",
@@ -45,8 +45,5 @@
     "swagger-autogen": "^2.23.7",
     "tsx": "^4.22.4",
     "typescript": "^5.9.3"
-  },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
   }
 }
