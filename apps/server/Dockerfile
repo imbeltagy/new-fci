@@ -19,8 +19,9 @@ WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=pruner /app/out/json/ .
 RUN pnpm install --prod --frozen-lockfile
+COPY --from=pruner /app/out/full/apps/server/prisma ./apps/server/prisma
+RUN pnpm --filter server exec prisma generate
 COPY --from=builder /app/apps/server/dist ./apps/server/dist
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
 WORKDIR /app/apps/server
 EXPOSE 4000
