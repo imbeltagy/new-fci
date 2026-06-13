@@ -1,11 +1,30 @@
 import type { Request, Response } from "express";
 
+import { Role } from "@prisma/client";
+
 import type { AssignStaffToSubjectDto } from "./dto/request/assign-staff.dto";
 import type { CreateSubjectDto } from "./dto/request/create-subject.dto";
 import type { UpdateSubjectDto } from "./dto/request/update-subject.dto";
 import { SubjectsService } from "./subjects.service";
 
 const svc = new SubjectsService();
+
+const isAdminRole = (role: Role) => role === Role.it || role === Role.superadmin;
+
+export async function getSubjectDetail(req: Request, res: Response) {
+  try {
+    const { sub, role } = req.user!;
+    const detail = await svc.getSubjectDetail(
+      req.params["id"] as string,
+      sub,
+      role,
+      isAdminRole(role),
+    );
+    res.json(detail);
+  } catch (err: any) {
+    res.status(err.status ?? 500).json({ message: err.message });
+  }
+}
 
 export async function listSubjects(req: Request, res: Response) {
   try {

@@ -72,7 +72,7 @@ export default function SettingsPage() {
     <div className="space-y-6 py-4">
       <div className="space-y-1">
         <MenuRow icon={User} label="Profile" href="/settings/profile" />
-        <MenuRow icon={LifeBuoy} label="Support tickets" disabled />
+        <MenuRow icon={LifeBuoy} label="Support tickets" href="/settings/tickets" />
       </div>
 
       <div className="space-y-1">

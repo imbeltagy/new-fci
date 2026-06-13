@@ -2,7 +2,13 @@
 
 import { API_ROUTES } from "../constants/api";
 import { api } from "../lib/api-client";
-import type { CreateMajorBody, Major, MajorStaffMember, UpdateMajorBody } from "../types/major";
+import type {
+  CreateMajorBody,
+  Major,
+  MajorDetail,
+  MajorStaffMember,
+  UpdateMajorBody,
+} from "../types/major";
 
 export async function listMajors() {
   return api.get<{ majors: Major[] }>(API_ROUTES.majors.list);
@@ -14,6 +20,12 @@ export async function createMajor(body: CreateMajorBody) {
 
 export async function getMajor(id: string) {
   return api.get<{ major: Major }>(API_ROUTES.majors.getById(id));
+}
+
+export async function getMajorDetail(id: string, joinYearId: string) {
+  return api.get<MajorDetail>(API_ROUTES.majors.detail(id), {
+    queries: { joinYearId },
+  });
 }
 
 export async function updateMajor(id: string, body: UpdateMajorBody) {

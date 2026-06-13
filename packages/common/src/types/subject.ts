@@ -80,3 +80,31 @@ export interface StaffMajorEntry {
   major: { id: string; name: string; code: string };
   joinYear: { id: string; year: number };
 }
+
+export interface SubjectDetailStaff {
+  id: string;
+  name: string;
+  role: string;
+  avatarUrl: string | null;
+}
+
+export interface SubjectDetailStudent {
+  id: string;
+  name: string;
+  email: string;
+  avatarUrl: string | null;
+}
+
+export interface SubjectDetail {
+  subject: {
+    id: string;
+    code: string;
+    name: string;
+    semester: Semester;
+    major: { id: string; name: string; code: string };
+    joinYear: { id: string; year: number };
+  };
+  channelId: string | null;
+  staff: SubjectDetailStaff[];
+  students: SubjectDetailStudent[];
+}

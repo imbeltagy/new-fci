@@ -9,6 +9,7 @@ import type {
   StaffSubjectEntry,
   StudentSubjectEntry,
   Subject,
+  SubjectDetail,
   SubjectEnrollment,
   SubjectStaffMember,
   UpdateSubjectBody,
@@ -26,6 +27,10 @@ export async function createSubject(body: CreateSubjectBody) {
 
 export async function getSubject(id: string) {
   return api.get<{ subject: Subject }>(API_ROUTES.subjects.getById(id));
+}
+
+export async function getSubjectDetail(id: string) {
+  return api.get<SubjectDetail>(API_ROUTES.subjects.detail(id));
 }
 
 export async function updateSubject(id: string, body: UpdateSubjectBody) {

@@ -1,5 +1,6 @@
 import "reflect-metadata";
 import "dotenv/config";
+import { createServer } from "http";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
@@ -9,17 +10,21 @@ import swaggerUi from "swagger-ui-express";
 import { Role } from "@prisma/client";
 
 import { accessGroupsRouter } from "./access-groups/access-groups.router";
+import { conversationsRouter } from "./conversations/conversations.router";
 import { FilesService } from "./files/files.service";
 import { assignmentsRouter } from "./assignments/assignments.router";
 import { authRouter } from "./auth/auth.router";
 import { permissionsConfig } from "./config/permissions.config";
 import { connectPostgres } from "./db/postgres";
 import { connectRedis } from "./db/redis";
+import { initSocket } from "./lib/socket";
 import { healthcheckRouter } from "./healthcheck/healthcheck.router";
 import { joinYearsRouter } from "./join-years/join-years.router";
 import { majorsRouter } from "./majors/majors.router";
 import { auth } from "./middleware/auth";
+import { roomsRouter } from "./rooms/rooms.router";
 import { subjectsRouter } from "./subjects/subjects.router";
+import { ticketsRouter } from "./tickets/tickets.router";
 import swaggerDocument from "./swagger/swagger-output.json";
 import { usersRouter } from "./users/users.router";
 
@@ -50,6 +55,9 @@ app.use("/access-groups", accessGroupsRouter);
 app.use("/join-years", joinYearsRouter);
 app.use("/majors", majorsRouter);
 app.use("/subjects", subjectsRouter);
+app.use("/rooms", roomsRouter);
+app.use("/conversations", conversationsRouter);
+app.use("/tickets", ticketsRouter);
 
 app.get(
   "/permissions-config",
@@ -69,11 +77,14 @@ cron.schedule("0 4 * * *", () => {
     .catch((err) => console.error("Cron: file cleanup failed", err));
 });
 
+const httpServer = createServer(app);
+initSocket(httpServer);
+
 const start = async () => {
   await connectPostgres();
   await connectRedis();
 
-  app.listen(PORT, () => {
+  httpServer.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
 };

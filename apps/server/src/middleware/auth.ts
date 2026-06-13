@@ -29,6 +29,27 @@ export const validateCsrf = (
   next();
 };
 
+/**
+ * Routes reachable by both client (JWT) and admin (session) users. Picks the
+ * scheme by the presence of a `session_id` cookie.
+ */
+export const authEither = (options: {
+  clientRoles: Role[];
+  adminRoles: Role[];
+  permissions?: Permission[];
+}) =>
+  (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    const sessionId = req.cookies?.session_id as string | undefined;
+    if (sessionId) {
+      return auth({
+        authorization: "session",
+        roles: options.adminRoles,
+        permissions: options.permissions ?? null,
+      })(req, res, next);
+    }
+    return auth({ authorization: "jwt", roles: options.clientRoles })(req, res, next);
+  };
+
 export const auth = (options: AuthOptions) =>
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     if (options.authorization === "session") {

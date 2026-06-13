@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import {
   getMySubjects,
+  getSubjectDetail,
   getSubjectEnrollments,
   getSubjectStaff,
   listSubjects,
@@ -15,6 +16,7 @@ export const SUBJECT_KEYS = {
   list: (filter?: ListSubjectsFilter) => ["subjects", "list", filter] as const,
   staff: (id: string) => ["subjects", "staff", id] as const,
   enrollments: (id: string) => ["subjects", "enrollments", id] as const,
+  detail: (id: string) => ["subjects", "detail", id] as const,
   mine: () => ["subjects", "mine"] as const,
 };
 
@@ -45,5 +47,13 @@ export function useMySubjectsQuery() {
   return useQuery({
     queryKey: SUBJECT_KEYS.mine(),
     queryFn: getMySubjects,
+  });
+}
+
+export function useSubjectDetailQuery(subjectId: string) {
+  return useQuery({
+    queryKey: SUBJECT_KEYS.detail(subjectId),
+    queryFn: () => getSubjectDetail(subjectId),
+    enabled: !!subjectId,
   });
 }

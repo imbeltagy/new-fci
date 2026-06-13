@@ -96,4 +96,58 @@ export class SubjectsRepository {
       select: { id: true },
     });
   }
+
+  // ── Detail (client-facing) ──────────────────────────────────────────────
+
+  async findDetail(subjectId: string) {
+    return this.db.subject.findUnique({
+      where: { id: subjectId },
+      select: {
+        ...subjectSelect,
+        room: { select: { id: true } },
+        staffAssignments: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                role: true,
+                avatar: { select: { id: true, url: true } },
+              },
+            },
+          },
+          orderBy: { createdAt: "asc" },
+        },
+        enrollments: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                avatar: { select: { id: true, url: true } },
+              },
+            },
+          },
+          orderBy: { user: { name: "asc" } },
+        },
+      },
+    });
+  }
+
+  async isEnrolled(userId: string, subjectId: string) {
+    const row = await this.db.subjectEnrollment.findUnique({
+      where: { userId_subjectId: { userId, subjectId } },
+      select: { id: true },
+    });
+    return !!row;
+  }
+
+  async isStaffAssigned(userId: string, subjectId: string) {
+    const row = await this.db.staffSubjectAssignment.findUnique({
+      where: { userId_subjectId: { userId, subjectId } },
+      select: { id: true },
+    });
+    return !!row;
+  }
 }

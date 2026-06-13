@@ -7,6 +7,8 @@ import {
   CalendarDays,
   GraduationCap,
   LayoutDashboard,
+  LifeBuoy,
+  MessagesSquare,
   Shield,
   Users,
 } from "lucide-react";
@@ -19,6 +21,8 @@ const NAV_ITEMS = [
   { name: "Join Years", path: "/join-years", icon: CalendarDays },
   { name: "Majors", path: "/majors", icon: GraduationCap },
   { name: "Subjects", path: "/subjects", icon: BookOpen },
+  { name: "Channels", path: "/rooms", icon: MessagesSquare },
+  { name: "Tickets", path: "/tickets", icon: LifeBuoy },
 ];
 
 export function Sidebar() {

@@ -1,11 +1,32 @@
 import type { Request, Response } from "express";
 
+import { Role } from "@prisma/client";
+
 import type { AssignStaffToMajorDto } from "./dto/request/assign-staff.dto";
 import type { CreateMajorDto } from "./dto/request/create-major.dto";
 import type { UpdateMajorDto } from "./dto/request/update-major.dto";
 import { MajorsService } from "./majors.service";
 
 const svc = new MajorsService();
+
+const isAdminRole = (role: Role) => role === Role.it || role === Role.superadmin;
+
+export async function getMajorDetail(req: Request, res: Response) {
+  try {
+    const { sub, role } = req.user!;
+    const { joinYearId } = req.query as Record<string, string | undefined>;
+    const detail = await svc.getMajorDetail(
+      req.params["id"] as string,
+      joinYearId ?? "",
+      sub,
+      role,
+      isAdminRole(role),
+    );
+    res.json(detail);
+  } catch (err: any) {
+    res.status(err.status ?? 500).json({ message: err.message });
+  }
+}
 
 export async function listMajors(_req: Request, res: Response) {
   try {

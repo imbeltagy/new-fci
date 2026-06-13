@@ -2,6 +2,7 @@
 
 import { useEffect, type ReactNode } from "react";
 
+import { useSocket } from "@repo/common/hooks/use-socket";
 import { useAuthStore } from "@repo/common/stores/auth.store";
 
 import { BottomNav } from "@/components/layout/bottom-nav";
@@ -9,6 +10,9 @@ import { MainHeader } from "@/components/layout/main-header";
 
 export default function MainLayout({ children }: { children: ReactNode }) {
   const initAuth = useAuthStore((s) => s.initAuth);
+
+  // Opens the shared realtime connection for the whole authenticated app.
+  useSocket();
 
   useEffect(() => {
     initAuth();

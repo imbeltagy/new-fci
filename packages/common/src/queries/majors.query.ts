@@ -2,12 +2,13 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-import { getMajorStaff, listMajors } from "../actions/majors.action";
+import { getMajorDetail, getMajorStaff, listMajors } from "../actions/majors.action";
 
 export const MAJOR_KEYS = {
   all: ["majors"] as const,
   list: () => ["majors", "list"] as const,
   staff: (majorId: string, joinYearId?: string) => ["majors", "staff", majorId, joinYearId] as const,
+  detail: (majorId: string, joinYearId: string) => ["majors", "detail", majorId, joinYearId] as const,
 };
 
 export function useListMajorsQuery() {
@@ -22,5 +23,13 @@ export function useMajorStaffQuery(majorId: string, joinYearId?: string) {
     queryKey: MAJOR_KEYS.staff(majorId, joinYearId),
     queryFn: () => getMajorStaff(majorId, joinYearId),
     enabled: !!majorId,
+  });
+}
+
+export function useMajorDetailQuery(majorId: string, joinYearId: string) {
+  return useQuery({
+    queryKey: MAJOR_KEYS.detail(majorId, joinYearId),
+    queryFn: () => getMajorDetail(majorId, joinYearId),
+    enabled: !!majorId && !!joinYearId,
   });
 }

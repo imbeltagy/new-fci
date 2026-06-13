@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { useAuthStore } from "@repo/common/stores/auth.store";
 import { useMySubjectsQuery } from "@repo/common/queries/subjects.query";
 import type {
@@ -25,7 +27,11 @@ function StudentView({ subjects }: { subjects: StudentSubjectEntry[] }) {
         const s = entry.subject;
         const staff = s.staffAssignments.map((a) => a.user);
         return (
-          <div key={entry.id} className="rounded-lg border bg-card p-4 space-y-1">
+          <Link
+            key={entry.id}
+            href={`/subjects/${s.id}`}
+            className="block space-y-1 rounded-lg border bg-card p-4 transition-colors hover:bg-muted"
+          >
             <div className="flex items-center justify-between">
               <div>
                 <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded mr-2">{s.code}</span>
@@ -42,7 +48,7 @@ function StudentView({ subjects }: { subjects: StudentSubjectEntry[] }) {
                 {staff.map((u) => u.name).join(", ")}
               </p>
             )}
-          </div>
+          </Link>
         );
       })}
     </div>
@@ -62,11 +68,15 @@ function StaffView({
         <div className="space-y-3">
           <h2 className="text-lg font-semibold">Major Assignments</h2>
           {majorAssignments.map((a) => (
-            <div key={a.id} className="rounded-lg border bg-card p-4">
+            <Link
+              key={a.id}
+              href={`/majors/${a.major.id}?year=${a.joinYearId}`}
+              className="block rounded-lg border bg-card p-4 transition-colors hover:bg-muted"
+            >
               <span className="font-semibold">{a.major.name}</span>
               <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded ml-2">{a.major.code}</span>
               <span className="text-sm text-muted-foreground ml-2">· {a.joinYear.year}</span>
-            </div>
+            </Link>
           ))}
         </div>
       )}
@@ -77,7 +87,11 @@ function StaffView({
           {subjects.map((entry) => {
             const s = entry.subject;
             return (
-              <div key={entry.id} className="rounded-lg border bg-card p-4 space-y-1">
+              <Link
+                key={entry.id}
+                href={`/subjects/${s.id}`}
+                className="block space-y-1 rounded-lg border bg-card p-4 transition-colors hover:bg-muted"
+              >
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded mr-2">{s.code}</span>
@@ -88,7 +102,7 @@ function StaffView({
                 <p className="text-sm text-muted-foreground">
                   {s.major.name} · {s.joinYear.year}
                 </p>
-              </div>
+              </Link>
             );
           })}
         </div>

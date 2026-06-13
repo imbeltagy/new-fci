@@ -55,4 +55,48 @@ export class MajorsService {
   async removeStaff(majorId: string, userId: string, joinYearId: string) {
     await this.repo.removeStaff(userId, majorId, joinYearId);
   }
+
+  async getMajorDetail(
+    majorId: string,
+    joinYearId: string,
+    userId: string,
+    role: string,
+    isAdmin: boolean,
+  ) {
+    if (!joinYearId) {
+      throw Object.assign(new Error("joinYearId is required"), { status: 400 });
+    }
+
+    if (!isAdmin) {
+      // Only faculty assigned to this (major × join year) may view it.
+      const allowed = await this.repo.isStaffOfMajor(userId, majorId, joinYearId);
+      if (!allowed) {
+        throw Object.assign(new Error("You don't have access to this major"), { status: 403 });
+      }
+    }
+
+    const detail = await this.repo.findDetail(majorId, joinYearId);
+    if (!detail.major || !detail.joinYear) {
+      throw Object.assign(new Error("Major not found"), { status: 404 });
+    }
+
+    return {
+      major: detail.major,
+      joinYear: detail.joinYear,
+      channelId: detail.room?.id ?? null,
+      subjects: detail.subjects,
+      teachers: detail.teachers.map((t) => ({
+        id: t.user.id,
+        name: t.user.name,
+        role: t.user.role,
+        avatarUrl: t.user.avatar?.url ?? null,
+      })),
+      students: detail.students.map((s) => ({
+        id: s.id,
+        name: s.name,
+        email: s.email,
+        avatarUrl: s.avatar?.url ?? null,
+      })),
+    };
+  }
 }

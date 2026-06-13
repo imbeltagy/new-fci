@@ -3,7 +3,7 @@ import { Router } from "express";
 import { Role } from "@prisma/client";
 
 import { Permission } from "../config/permissions.config";
-import { auth } from "../middleware/auth";
+import { auth, authEither } from "../middleware/auth";
 import { validateBody } from "../middleware/validate";
 import * as ctrl from "./subjects.controller";
 import { AssignStaffToSubjectDto } from "./dto/request/assign-staff.dto";
@@ -19,6 +19,13 @@ subjectsRouter.get(
   "/",
   auth({ authorization: "session", roles: anyAdmin, permissions: [Permission.SUBJECTS_MANAGE] }),
   ctrl.listSubjects,
+);
+
+// Client-facing subject detail — enrolled students / assigned staff / admins.
+subjectsRouter.get(
+  "/:id/detail",
+  authEither({ clientRoles: anyClient, adminRoles: anyAdmin, permissions: [Permission.SUBJECTS_MANAGE] }),
+  ctrl.getSubjectDetail,
 );
 
 subjectsRouter.post(

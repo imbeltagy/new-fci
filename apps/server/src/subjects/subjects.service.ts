@@ -74,4 +74,48 @@ export class SubjectsService {
   async unenrollStudent(subjectId: string, userId: string) {
     await this.repo.unenrollStudent(userId, subjectId);
   }
+
+  async getSubjectDetail(
+    subjectId: string,
+    userId: string,
+    role: string,
+    isAdmin: boolean,
+  ) {
+    const detail = await this.repo.findDetail(subjectId);
+    if (!detail) throw Object.assign(new Error("Subject not found"), { status: 404 });
+
+    if (!isAdmin) {
+      const allowed =
+        role === "student"
+          ? await this.repo.isEnrolled(userId, subjectId)
+          : await this.repo.isStaffAssigned(userId, subjectId);
+      if (!allowed) {
+        throw Object.assign(new Error("You don't have access to this subject"), { status: 403 });
+      }
+    }
+
+    return {
+      subject: {
+        id: detail.id,
+        code: detail.code,
+        name: detail.name,
+        semester: detail.semester,
+        major: detail.major,
+        joinYear: detail.joinYear,
+      },
+      channelId: detail.room?.id ?? null,
+      staff: detail.staffAssignments.map((a) => ({
+        id: a.user.id,
+        name: a.user.name,
+        role: a.user.role,
+        avatarUrl: a.user.avatar?.url ?? null,
+      })),
+      students: detail.enrollments.map((e) => ({
+        id: e.user.id,
+        name: e.user.name,
+        email: e.user.email,
+        avatarUrl: e.user.avatar?.url ?? null,
+      })),
+    };
+  }
 }

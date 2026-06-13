@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 
 import { Toaster } from "@repo/common/components/ui/sonner";
+import { useSocket } from "@repo/common/hooks/use-socket";
 import { useAuthStore } from "@repo/common/stores/auth.store";
 
 import { Sidebar } from "@/components/control-panel/sidebar";
@@ -14,6 +15,9 @@ export default function ControlPanelLayout({
   children: React.ReactNode;
 }) {
   const initAuth = useAuthStore((s) => s.initAuth);
+
+  // Realtime connection — lets IT staff receive live ticket events.
+  useSocket();
 
   useEffect(() => {
     initAuth();

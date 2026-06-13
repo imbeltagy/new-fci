@@ -45,6 +45,7 @@ export const API_ROUTES = {
   majors: {
     list: "/majors",
     create: "/majors",
+    detail: (id: string) => `/majors/${id}/detail`,
     getById: (id: string) => `/majors/${id}`,
     updateById: (id: string) => `/majors/${id}`,
     deleteById: (id: string) => `/majors/${id}`,
@@ -56,6 +57,7 @@ export const API_ROUTES = {
   subjects: {
     list: "/subjects",
     create: "/subjects",
+    detail: (id: string) => `/subjects/${id}/detail`,
     getById: (id: string) => `/subjects/${id}`,
     updateById: (id: string) => `/subjects/${id}`,
     deleteById: (id: string) => `/subjects/${id}`,
@@ -65,6 +67,37 @@ export const API_ROUTES = {
     enrollmentsBulk: (subjectId: string) => `/subjects/${subjectId}/enrollments/bulk`,
     enrollStudent: (subjectId: string, userId: string) => `/subjects/${subjectId}/enrollments/${userId}`,
     unenrollStudent: (subjectId: string, userId: string) => `/subjects/${subjectId}/enrollments/${userId}`,
+  },
+
+  conversations: {
+    list: "/conversations",
+    start: "/conversations",
+    getById: (id: string) => `/conversations/${id}`,
+    messages: (id: string) => `/conversations/${id}/messages`,
+  },
+
+  tickets: {
+    list: "/tickets",
+    create: "/tickets",
+    getById: (id: string) => `/tickets/${id}`,
+    status: (id: string) => `/tickets/${id}/status`,
+    messages: (id: string) => `/tickets/${id}/messages`,
+  },
+
+  rooms: {
+    list: "/rooms",
+    create: "/rooms",
+    getById: (id: string) => `/rooms/${id}`,
+    deleteById: (id: string) => `/rooms/${id}`,
+    messages: (id: string) => `/rooms/${id}/messages`,
+    deleteMessage: (id: string, messageId: string) =>
+      `/rooms/${id}/messages/${messageId}`,
+    pins: (id: string) => `/rooms/${id}/pins`,
+    pin: (id: string, messageId: string) => `/rooms/${id}/pins/${messageId}`,
+    unpin: (id: string, messageId: string) => `/rooms/${id}/pins/${messageId}`,
+    mutes: (id: string) => `/rooms/${id}/mutes`,
+    mute: (id: string, userId: string) => `/rooms/${id}/mute/${userId}`,
+    unmute: (id: string, userId: string) => `/rooms/${id}/mute/${userId}`,
   },
 
   assignments: {
