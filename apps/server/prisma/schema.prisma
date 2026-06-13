@@ -21,14 +21,33 @@ enum Semester {
   summer
 }
 
+model File {
+  id        String    @id @default(uuid())
+  key       String    @unique
+  url       String
+  name      String
+  size      Int
+  mimeType  String    @map("mime_type")
+  bucket    String
+  createdAt DateTime  @default(now()) @map("created_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  userAvatar User? @relation("UserAvatar")
+  userCover  User? @relation("UserCover")
+
+  @@map("files")
+}
+
 model User {
   id                 String       @id @default(uuid())
   email              String       @unique
   passwordHash       String
   role               Role
   name               String
-  avatarUrl          String?
-  coverUrl           String?
+  avatarId           String?      @unique
+  avatar             File?        @relation("UserAvatar", fields: [avatarId], references: [id], onDelete: SetNull)
+  coverId            String?      @unique
+  cover              File?        @relation("UserCover", fields: [coverId], references: [id], onDelete: SetNull)
   isActive           Boolean      @default(true)
   mustChangePassword Boolean      @default(true)
   tempPassword       String?

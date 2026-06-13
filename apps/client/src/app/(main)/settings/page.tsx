@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ChevronRight, LifeBuoy, LogOut, User } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -9,23 +10,42 @@ import { useAuthStore } from "@repo/common/stores/auth.store";
 function MenuRow({
   icon: Icon,
   label,
+  href,
   onClick,
   disabled,
 }: {
   icon: LucideIcon;
   label: string;
+  href?: string;
   onClick?: () => void;
   disabled?: boolean;
 }) {
+  const inner = (
+    <>
+      <Icon className="h-5 w-5 shrink-0 text-muted-foreground" />
+      <span className="flex-1 text-sm font-medium">{label}</span>
+      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link
+        href={href}
+        className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-muted"
+      >
+        {inner}
+      </Link>
+    );
+  }
+
   return (
     <button
       onClick={onClick}
       disabled={disabled}
       className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-muted disabled:pointer-events-none disabled:opacity-40"
     >
-      <Icon className="h-5 w-5 shrink-0 text-muted-foreground" />
-      <span className="flex-1 text-sm font-medium">{label}</span>
-      <ChevronRight className="h-4 w-4 text-muted-foreground" />
+      {inner}
     </button>
   );
 }
@@ -51,7 +71,7 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6 py-4">
       <div className="space-y-1">
-        <MenuRow icon={User} label="Profile" disabled />
+        <MenuRow icon={User} label="Profile" href="/settings/profile" />
         <MenuRow icon={LifeBuoy} label="Support tickets" disabled />
       </div>
 

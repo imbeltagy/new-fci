@@ -1,5 +1,10 @@
 export type UserRole = "student" | "teacher" | "sub_teacher" | "it" | "superadmin";
 
+export interface UserFileRef {
+  id: string;
+  url: string;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -7,8 +12,8 @@ export interface User {
   role: UserRole;
   isActive: boolean;
   mustChangePassword: boolean;
-  avatarUrl: string | null;
-  coverUrl: string | null;
+  avatar: UserFileRef | null;
+  cover: UserFileRef | null;
   whatsapp: string | null;
   accessGroupId: string | null;
   joinYearId: string | null;
@@ -35,8 +40,8 @@ export interface UpdateUserBody {
 
 export interface UpdateMeBody {
   name?: string;
-  avatarUrl?: string;
-  coverUrl?: string;
+  avatar?: File;
+  cover?: File;
   whatsapp?: string;
 }
 

@@ -1,4 +1,6 @@
+import type { NextFunction, Request, Response } from "express";
 import { Router } from "express";
+import multer from "multer";
 
 import { Role } from "@prisma/client";
 
@@ -12,8 +14,19 @@ import { SendCredentialsDto } from "./dto/request/send-credentials.dto";
 import { UpdateMeDto } from "./dto/request/update-me.dto";
 import { UpdateUserDto } from "./dto/request/update-user.dto";
 
+const upload = multer({ storage: multer.memoryStorage() });
+
 const anyClient: Role[] = [Role.student, Role.teacher, Role.sub_teacher];
 const anyAdmin: Role[] = [Role.it, Role.superadmin];
+
+// Accepts either session (admin) or JWT (client) for self-profile endpoints.
+function authSelf(req: Request, res: Response, next: NextFunction): Promise<void> {
+  const sessionId = req.cookies?.session_id as string | undefined;
+  if (sessionId) {
+    return auth({ authorization: "session", roles: anyAdmin })(req, res, next);
+  }
+  return auth({ authorization: "jwt", roles: anyClient })(req, res, next);
+}
 
 export const usersRouter = Router();
 
@@ -40,12 +53,8 @@ usersRouter.post(
   usersController.createManyUsers,
 );
 
-// Client (JWT) — must be before /:id
-usersRouter.get(
-  "/me",
-  auth({ authorization: "jwt", roles: anyClient }),
-  usersController.getMe,
-);
+// Self-profile — accepts both session (admin) and JWT (client). Must be before /:id.
+usersRouter.get("/me", authSelf, usersController.getMe);
 
 usersRouter.get(
   "/me/subjects",
@@ -55,8 +64,11 @@ usersRouter.get(
 
 usersRouter.patch(
   "/me",
-  auth({ authorization: "jwt", roles: anyClient }),
-  /* #swagger.parameters['body'] = { in:'body', schema:{ $ref:'#/definitions/UpdateMeDto' } } */
+  authSelf,
+  upload.fields([
+    { name: "avatar", maxCount: 1 },
+    { name: "cover", maxCount: 1 },
+  ]),
   validateBody(UpdateMeDto),
   usersController.updateMe,
 );

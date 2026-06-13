@@ -10,6 +10,30 @@ interface ListUsersFilter {
   excludeRoles?: Role[];
 }
 
+const fileSelect = { select: { id: true, url: true } } as const;
+
+const baseUserSelect = {
+  id: true,
+  email: true,
+  name: true,
+  role: true,
+  isActive: true,
+  sendOnce: true,
+  mustChangePassword: true,
+  avatar: fileSelect,
+  cover: fileSelect,
+  joinYearId: true,
+  majorId: true,
+  accessGroupId: true,
+  createdAt: true,
+} as const;
+
+const fullUserSelect = {
+  ...baseUserSelect,
+  whatsapp: true,
+  updatedAt: true,
+} as const;
+
 export class UsersRepository {
   private get db() {
     return getPrismaClient();
@@ -36,21 +60,7 @@ export class UsersRepository {
           ],
         }),
       },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        isActive: true,
-        sendOnce: true,
-        mustChangePassword: true,
-        avatarUrl: true,
-        coverUrl: true,
-        joinYearId: true,
-        majorId: true,
-        accessGroupId: true,
-        createdAt: true,
-      },
+      select: baseUserSelect,
       orderBy: { createdAt: "desc" },
     });
   }
@@ -58,23 +68,14 @@ export class UsersRepository {
   async findById(id: string) {
     return this.db.user.findUnique({
       where: { id },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        isActive: true,
-        sendOnce: true,
-        mustChangePassword: true,
-        avatarUrl: true,
-        coverUrl: true,
-        whatsapp: true,
-        joinYearId: true,
-        majorId: true,
-        accessGroupId: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+      select: fullUserSelect,
+    });
+  }
+
+  async findAvatarCoverIds(id: string) {
+    return this.db.user.findUnique({
+      where: { id },
+      select: { avatarId: true, coverId: true },
     });
   }
 
@@ -106,9 +107,13 @@ export class UsersRepository {
 
   async updateProfile(
     id: string,
-    data: Partial<Pick<User, "name" | "avatarUrl" | "coverUrl" | "whatsapp">>,
+    data: { name?: string; avatarId?: string; coverId?: string; whatsapp?: string },
   ) {
-    return this.db.user.update({ where: { id }, data });
+    return this.db.user.update({
+      where: { id },
+      data,
+      select: fullUserSelect,
+    });
   }
 
   async adminUpdate(

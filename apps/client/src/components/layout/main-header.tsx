@@ -24,7 +24,7 @@ export function MainHeader() {
   const user = meData?.data?.user;
   const name = user?.name ?? storeUser?.name ?? "";
   const role = user?.role ?? storeUser?.role ?? "";
-  const avatarUrl = user?.avatarUrl;
+  const avatarUrl = user?.avatar?.url;
   const majorId = user?.majorId;
 
   const isStudent = role === "student";

@@ -1,3 +1,8 @@
+export class FileRef {
+  id!: string;
+  url!: string;
+}
+
 export class UserResponse {
   id!: string;
   email!: string;
@@ -5,8 +10,8 @@ export class UserResponse {
   role!: string;
   isActive!: boolean;
   mustChangePassword!: boolean;
-  avatarUrl!: string | null;
-  coverUrl!: string | null;
+  avatar!: FileRef | null;
+  cover!: FileRef | null;
   whatsapp!: string | null;
   accessGroupId!: string | null;
   joinYearId!: string | null;

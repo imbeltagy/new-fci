@@ -52,7 +52,7 @@ const routeTree: RouteNode = {
         Permission.USERS_DEACTIVATE,
       ],
     ),
-    me: open(anyUser),
+    me: open([...anyClient, ...anyAdmin]),
     bulk: guarded([Role.superadmin, Role.it], [Permission.USERS_CREATE]),
     "send-credentials": guarded(
       [Role.superadmin, Role.it],

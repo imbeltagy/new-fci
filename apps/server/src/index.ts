@@ -3,11 +3,13 @@ import "dotenv/config";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
+import cron from "node-cron";
 import swaggerUi from "swagger-ui-express";
 
 import { Role } from "@prisma/client";
 
 import { accessGroupsRouter } from "./access-groups/access-groups.router";
+import { FilesService } from "./files/files.service";
 import { assignmentsRouter } from "./assignments/assignments.router";
 import { authRouter } from "./auth/auth.router";
 import { permissionsConfig } from "./config/permissions.config";
@@ -56,6 +58,13 @@ app.get(
 );
 
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+const filesService = new FilesService();
+cron.schedule("0 4 * * *", () => {
+  filesService.cleanDeletedFiles().catch((err) =>
+    console.error("Cron: file cleanup failed", err),
+  );
+});
 
 const start = async () => {
   await connectPostgres();

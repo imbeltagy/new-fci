@@ -1,9 +1,9 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { getMe, getUser, listUsers } from "../actions/users.action";
-import type { ListUsersFilter } from "../types/user";
+import { getMe, getUser, listUsers, updateMe } from "../actions/users.action";
+import type { ListUsersFilter, UpdateMeBody } from "../types/user";
 
 export const USER_KEYS = {
   all: ["users"] as const,
@@ -31,5 +31,18 @@ export function useGetMeQuery() {
   return useQuery({
     queryKey: USER_KEYS.me(),
     queryFn: getMe,
+  });
+}
+
+export function useUpdateMeMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (body: UpdateMeBody) => updateMe(body),
+    onSuccess: (result) => {
+      if (result.success && result.data) {
+        queryClient.setQueryData(USER_KEYS.me(), result);
+      }
+      queryClient.invalidateQueries({ queryKey: USER_KEYS.me() });
+    },
   });
 }

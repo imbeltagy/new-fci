@@ -35,7 +35,12 @@ export async function getMe() {
 }
 
 export async function updateMe(body: UpdateMeBody) {
-  return api.patch<{ user: User }>(API_ROUTES.users.updateMe, body);
+  const form = new FormData();
+  if (body.name !== undefined) form.append("name", body.name);
+  if (body.whatsapp !== undefined) form.append("whatsapp", body.whatsapp);
+  if (body.avatar instanceof File) form.append("avatar", body.avatar);
+  if (body.cover instanceof File) form.append("cover", body.cover);
+  return api.patch<{ user: User }>(API_ROUTES.users.updateMe, form);
 }
 
 export async function sendCredentials(userIds: string[]) {

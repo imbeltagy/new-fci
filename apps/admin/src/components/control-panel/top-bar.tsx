@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { LogOut, User, Palette } from "lucide-react";
+import { LogOut, Palette, User } from "lucide-react";
 import { toast } from "sonner";
 
 import { adminLogout } from "@repo/common/actions/auth.action";
@@ -15,7 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@repo/common/components/ui/dropdown-menu";
-import { Separator } from "@repo/common/components/ui/separator";
+import { useGetMeQuery } from "@repo/common/queries/users.query";
 import { useAuthStore } from "@repo/common/stores/auth.store";
 
 const ROLE_LABEL: Record<string, string> = {
@@ -39,8 +39,9 @@ export const TOP_BAR_HEIGHT = 56; // px
 
 export function TopBar() {
   const router = useRouter();
-  const user = useAuthStore((s) => s.user);
+  const storeUser = useAuthStore((s) => s.user);
   const clearAuth = useAuthStore((s) => s.clearAuth);
+  const { data: meData } = useGetMeQuery();
 
   const [hidden, setHidden] = useState(false);
   const lastScrollY = useRef(0);
@@ -65,8 +66,10 @@ export function TopBar() {
     router.push("/auth/login");
   }
 
-  const name = user?.name ?? "";
-  const role = user?.role ?? "";
+  const user = meData?.data?.user;
+  const name = user?.name ?? storeUser?.name ?? "";
+  const role = user?.role ?? storeUser?.role ?? "";
+  const avatarUrl = user?.avatar?.url;
 
   return (
     <header
@@ -79,7 +82,7 @@ export function TopBar() {
         <DropdownMenuTrigger asChild>
           <button className="rounded-full outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
             <Avatar className="h-8 w-8 cursor-pointer">
-              <AvatarImage src={undefined} alt={name} />
+              <AvatarImage src={avatarUrl} alt={name} />
               <AvatarFallback className="text-xs font-semibold">
                 {getInitials(name)}
               </AvatarFallback>
@@ -95,7 +98,7 @@ export function TopBar() {
 
           <DropdownMenuSeparator />
 
-          <DropdownMenuItem disabled>
+          <DropdownMenuItem onClick={() => router.push("/profile")}>
             <User className="mr-2 h-4 w-4" />
             Profile
           </DropdownMenuItem>

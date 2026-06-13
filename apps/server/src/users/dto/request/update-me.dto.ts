@@ -9,15 +9,5 @@ export class UpdateMeDto {
   @IsOptional()
   @IsString()
   @IsNotEmpty()
-  avatarUrl?: string;
-
-  @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  coverUrl?: string;
-
-  @IsOptional()
-  @IsString()
-  @IsNotEmpty()
   whatsapp?: string;
 }

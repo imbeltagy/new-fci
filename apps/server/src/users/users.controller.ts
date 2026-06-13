@@ -59,13 +59,17 @@ export async function getMe(req: Request, res: Response) {
 
 export async function updateMe(req: Request, res: Response) {
   try {
-    res.json({
-      user: await usersService.updateProfile(
-        req.user!.sub,
-        req.body as UpdateMeDto,
-        req.user!.role,
-      ),
-    });
+    const files = req.files as Record<string, Express.Multer.File[]> | undefined;
+    const user = await usersService.updateProfile(
+      req.user!.sub,
+      req.body as UpdateMeDto,
+      req.user!.role,
+      {
+        avatar: files?.["avatar"]?.[0],
+        cover: files?.["cover"]?.[0],
+      },
+    );
+    res.json({ user });
   } catch (err: any) {
     res.status(err.status ?? 500).json({ message: err.message });
   }

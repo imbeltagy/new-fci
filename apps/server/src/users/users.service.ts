@@ -2,6 +2,7 @@ import { randomBytes } from "crypto";
 
 import { Role } from "@prisma/client";
 
+import { FilesService } from "../files/files.service";
 import { hashPassword } from "../lib/bcrypt";
 import { sendCredentialsEmail } from "../lib/email";
 import { deleteUserSessions } from "../lib/session";
@@ -13,7 +14,10 @@ import { UsersRepository } from "./users.repository";
 const generateTempPassword = () => randomBytes(9).toString("base64url");
 
 export class UsersService {
-  constructor(private readonly repo = new UsersRepository()) {}
+  constructor(
+    private readonly repo = new UsersRepository(),
+    private readonly filesService = new FilesService(),
+  ) {}
 
   async listUsers(filter: {
     role?: Role;
@@ -66,10 +70,33 @@ export class UsersService {
     }));
   }
 
-  async updateProfile(id: string, dto: UpdateMeDto, requestingRole: Role) {
-    const safeData =
-      requestingRole !== "student" ? { ...dto, whatsapp: undefined } : dto;
-    return this.repo.updateProfile(id, safeData);
+  async updateProfile(
+    userId: string,
+    dto: UpdateMeDto,
+    requestingRole: Role,
+    files: { avatar?: Express.Multer.File; cover?: Express.Multer.File },
+  ) {
+    const current = await this.repo.findAvatarCoverIds(userId);
+    const update: { name?: string; avatarId?: string; coverId?: string; whatsapp?: string } = {
+      name: dto.name,
+      whatsapp: requestingRole === Role.student ? dto.whatsapp : undefined,
+    };
+
+    if (files.avatar) {
+      const f = files.avatar;
+      const uploaded = await this.filesService.upload(f.buffer, f.originalname, f.mimetype, f.size);
+      update.avatarId = uploaded.id;
+      if (current?.avatarId) await this.filesService.softDelete(current.avatarId);
+    }
+
+    if (files.cover) {
+      const f = files.cover;
+      const uploaded = await this.filesService.upload(f.buffer, f.originalname, f.mimetype, f.size);
+      update.coverId = uploaded.id;
+      if (current?.coverId) await this.filesService.softDelete(current.coverId);
+    }
+
+    return this.repo.updateProfile(userId, update);
   }
 
   async adminUpdateUser(id: string, dto: UpdateUserDto) {
@@ -108,6 +135,9 @@ export class UsersService {
     ) {
       throw Object.assign(new Error("Forbidden"), { status: 403 });
     }
+
+    if (user.avatar) await this.filesService.softDelete(user.avatar.id);
+    if (user.cover) await this.filesService.softDelete(user.cover.id);
 
     await deleteUserSessions([id]);
     await this.repo.hardDelete(id);
