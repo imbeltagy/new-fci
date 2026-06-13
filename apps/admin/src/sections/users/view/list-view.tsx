@@ -35,6 +35,7 @@ import type { User, UserRole } from "@repo/common/types/user";
 import { PageHeader } from "@/components/control-panel/page-header";
 import { CreateUserForm } from "../create-user-form";
 import { EditUserForm } from "../edit-user-form";
+import { UserAssignmentsPanel } from "../user-assignments-panel";
 
 const ROLE_OPTIONS: { label: string; value: UserRole | "all" }[] = [
   { label: "All Roles", value: "all" },
@@ -86,18 +87,28 @@ interface EditUserDialogProps {
 }
 
 function EditUserDialog({ user, onClose, onUpdated }: EditUserDialogProps) {
+  const isStaff = user?.role === "teacher" || user?.role === "sub_teacher";
+
   return (
     <Dialog open={!!user} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent>
+      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit User</DialogTitle>
         </DialogHeader>
         {user && (
-          <EditUserForm
-            user={user}
-            onSuccess={() => { onUpdated(); onClose(); }}
-            onCancel={onClose}
-          />
+          <>
+            <EditUserForm
+              user={user}
+              onSuccess={() => { onUpdated(); onClose(); }}
+              onCancel={onClose}
+            />
+            {isStaff && (
+              <div className="border-t pt-4 mt-2">
+                <p className="text-sm font-semibold mb-3">Assignments</p>
+                <UserAssignmentsPanel userId={user.id} />
+              </div>
+            )}
+          </>
         )}
       </DialogContent>
     </Dialog>

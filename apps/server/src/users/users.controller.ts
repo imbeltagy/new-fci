@@ -101,6 +101,14 @@ export async function updateUser(req: Request, res: Response) {
   }
 }
 
+export async function getMySubjects(req: Request, res: Response) {
+  try {
+    res.json(await usersService.getMySubjects(req.user!.sub, req.user!.role));
+  } catch (err: any) {
+    res.status(err.status ?? 500).json({ message: err.message });
+  }
+}
+
 export async function deleteUser(req: Request, res: Response) {
   try {
     await usersService.deleteUser(req.params["id"] as string, req.user!.role);

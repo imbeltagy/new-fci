@@ -47,6 +47,12 @@ usersRouter.get(
   usersController.getMe,
 );
 
+usersRouter.get(
+  "/me/subjects",
+  auth({ authorization: "jwt", roles: anyClient }),
+  usersController.getMySubjects,
+);
+
 usersRouter.patch(
   "/me",
   auth({ authorization: "jwt", roles: anyClient }),

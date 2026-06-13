@@ -15,6 +15,12 @@ enum Role {
   superadmin
 }
 
+enum Semester {
+  first
+  second
+  summer
+}
+
 model User {
   id                 String       @id @default(uuid())
   email              String       @unique
@@ -31,11 +37,17 @@ model User {
   accessGroupId      String?
   accessGroup        AccessGroup? @relation(fields: [accessGroupId], references: [id], onDelete: SetNull)
   joinYearId         String?
+  joinYear           JoinYear?    @relation(fields: [joinYearId], references: [id], onDelete: SetNull)
   majorId            String?
+  major              Major?       @relation(fields: [majorId], references: [id], onDelete: SetNull)
   createdAt          DateTime     @default(now())
   updatedAt          DateTime     @updatedAt
 
-  passwordResetTokens PasswordResetToken[]
+  passwordResetTokens      PasswordResetToken[]
+  staffJoinYearAssignments StaffJoinYearAssignment[]
+  staffMajorAssignments    StaffMajorAssignment[]
+  staffSubjectAssignments  StaffSubjectAssignment[]
+  subjectEnrollments       SubjectEnrollment[]
 
   @@map("users")
 }
@@ -47,8 +59,8 @@ model AccessGroup {
   permissions Permission[]
   users       User[]
 
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("access_groups")
 }
@@ -59,7 +71,7 @@ model Permission {
   accessGroupId String
   accessGroup   AccessGroup @relation(fields: [accessGroupId], references: [id], onDelete: Cascade)
 
-  createdAt     DateTime    @default(now())
+  createdAt DateTime @default(now())
 
   @@unique([key, accessGroupId])
   @@index([accessGroupId])
@@ -76,4 +88,100 @@ model PasswordResetToken {
   createdAt DateTime  @default(now())
 
   @@map("password_reset_tokens")
+}
+
+model JoinYear {
+  id        String   @id @default(uuid())
+  year      Int      @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users                    User[]
+  subjects                 Subject[]
+  staffJoinYearAssignments StaffJoinYearAssignment[]
+  staffMajorAssignments    StaffMajorAssignment[]
+
+  @@map("join_years")
+}
+
+model Major {
+  id        String   @id @default(uuid())
+  name      String
+  code      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users                 User[]
+  subjects              Subject[]
+  staffMajorAssignments StaffMajorAssignment[]
+
+  @@map("majors")
+}
+
+model Subject {
+  id         String   @id @default(uuid())
+  code       String   @unique
+  name       String
+  semester   Semester
+  joinYearId String
+  joinYear   JoinYear @relation(fields: [joinYearId], references: [id], onDelete: Cascade)
+  majorId    String
+  major      Major    @relation(fields: [majorId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  enrollments      SubjectEnrollment[]
+  staffAssignments StaffSubjectAssignment[]
+
+  @@map("subjects")
+}
+
+model StaffJoinYearAssignment {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  joinYearId String
+  joinYear   JoinYear @relation(fields: [joinYearId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, joinYearId])
+  @@map("staff_join_year_assignments")
+}
+
+model StaffMajorAssignment {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  majorId    String
+  major      Major    @relation(fields: [majorId], references: [id], onDelete: Cascade)
+  joinYearId String
+  joinYear   JoinYear @relation(fields: [joinYearId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, majorId, joinYearId])
+  @@map("staff_major_assignments")
+}
+
+model StaffSubjectAssignment {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subjectId String
+  subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, subjectId])
+  @@map("staff_subject_assignments")
+}
+
+model SubjectEnrollment {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subjectId String
+  subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, subjectId])
+  @@map("subject_enrollments")
 }

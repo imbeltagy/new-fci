@@ -1,7 +1,7 @@
 "use client";
 
 import { yupResolver } from "@hookform/resolvers/yup";
-import { FormProvider, useForm, type Resolver } from "react-hook-form";
+import { FormProvider, useForm, useWatch, type Resolver } from "react-hook-form";
 import { toast } from "sonner";
 
 import { createUser } from "@repo/common/actions/users.action";
@@ -9,6 +9,8 @@ import { FormInput } from "@repo/common/components/custom/form-input";
 import { FormSelect } from "@repo/common/components/custom/form-select";
 import { Button } from "@repo/common/components/ui/button";
 import { DialogFooter } from "@repo/common/components/ui/dialog";
+import { useListJoinYearsQuery } from "@repo/common/queries/join-years.query";
+import { useListMajorsQuery } from "@repo/common/queries/majors.query";
 import { createUserSchema, type CreateUserSchema } from "@repo/common/schemas/user.schema";
 
 const ROLE_OPTIONS = [
@@ -24,18 +26,33 @@ interface CreateUserFormProps {
 }
 
 export function CreateUserForm({ onSuccess, onCancel }: CreateUserFormProps) {
+  const { data: joinYearsData } = useListJoinYearsQuery();
+  const { data: majorsData } = useListMajorsQuery();
+
+  const joinYearOptions = (joinYearsData?.data?.joinYears ?? []).map((jy) => ({
+    label: String(jy.year),
+    value: jy.id,
+  }));
+  const majorOptions = (majorsData?.data?.majors ?? []).map((m) => ({
+    label: `${m.name} (${m.code})`,
+    value: m.id,
+  }));
+
   const form = useForm<CreateUserSchema>({
     resolver: yupResolver(createUserSchema) as unknown as Resolver<CreateUserSchema>,
     defaultValues: { email: "", name: "", role: "student", joinYearId: "", majorId: "" },
   });
+
+  const role = useWatch({ control: form.control, name: "role" });
+  const isStudent = role === "student";
 
   async function onSubmit(values: CreateUserSchema) {
     const res = await createUser({
       email: values.email,
       name: values.name,
       role: values.role,
-      joinYearId: values.joinYearId || undefined,
-      majorId: values.majorId || undefined,
+      joinYearId: isStudent ? (values.joinYearId || undefined) : undefined,
+      majorId: isStudent ? (values.majorId || undefined) : undefined,
     });
     if (!res.success) {
       toast.error(res.message);
@@ -51,8 +68,12 @@ export function CreateUserForm({ onSuccess, onCancel }: CreateUserFormProps) {
         <FormInput name="email" label="Email" placeholder="user@example.com" required />
         <FormInput name="name" label="Name" placeholder="Full name" required />
         <FormSelect name="role" label="Role" options={ROLE_OPTIONS} required />
-        <FormInput name="joinYearId" label="Join Year ID" placeholder="Optional" />
-        <FormInput name="majorId" label="Major ID" placeholder="Optional" />
+        {isStudent && (
+          <>
+            <FormSelect name="joinYearId" label="Join Year" options={joinYearOptions} />
+            <FormSelect name="majorId" label="Major" options={majorOptions} />
+          </>
+        )}
         <DialogFooter>
           <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
           <Button type="submit" disabled={form.formState.isSubmitting}>

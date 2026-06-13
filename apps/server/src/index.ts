@@ -8,12 +8,16 @@ import swaggerUi from "swagger-ui-express";
 import { Role } from "@prisma/client";
 
 import { accessGroupsRouter } from "./access-groups/access-groups.router";
+import { assignmentsRouter } from "./assignments/assignments.router";
 import { authRouter } from "./auth/auth.router";
 import { permissionsConfig } from "./config/permissions.config";
 import { connectPostgres } from "./db/postgres";
 import { connectRedis } from "./db/redis";
 import { healthcheckRouter } from "./healthcheck/healthcheck.router";
+import { joinYearsRouter } from "./join-years/join-years.router";
+import { majorsRouter } from "./majors/majors.router";
 import { auth } from "./middleware/auth";
+import { subjectsRouter } from "./subjects/subjects.router";
 import swaggerDocument from "./swagger/swagger-output.json";
 import { usersRouter } from "./users/users.router";
 
@@ -36,7 +40,11 @@ app.use(cookieParser());
 app.use("/healthcheck", healthcheckRouter);
 app.use("/auth", authRouter);
 app.use("/users", usersRouter);
+app.use("/users/:userId/assignments", assignmentsRouter);
 app.use("/access-groups", accessGroupsRouter);
+app.use("/join-years", joinYearsRouter);
+app.use("/majors", majorsRouter);
+app.use("/subjects", subjectsRouter);
 
 app.get(
   "/permissions-config",

@@ -15,7 +15,7 @@ is needed from the first feature and grows with each one.
 | --- | --- | --- | --- |
 | 0 | Healthcheck | built | [features/healthcheck.md](./features/healthcheck.md) |
 | 1 | Users, auth & RBAC | building | [features/users-auth.md](./features/users-auth.md) |
-| 2 | Join years, majors & subjects | planned | [features/subjects-majors.md](./features/subjects-majors.md) |
+| 2 | Join years, majors & subjects | built | [features/subjects-majors.md](./features/subjects-majors.md) |
 | 3 | Channels & community | planned | [features/channels-community.md](./features/channels-community.md) |
 | 4 | Assessments (quizzes & assignments) | planned | [features/assessments.md](./features/assessments.md) |
 | 5 | Announcements | planned | [features/announcements.md](./features/announcements.md) |

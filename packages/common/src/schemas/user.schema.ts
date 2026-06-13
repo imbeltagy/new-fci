@@ -15,13 +15,8 @@ export const createUserSchema = yup.object({
 export type CreateUserSchema = yup.InferType<typeof createUserSchema>;
 
 export const editUserSchema = yup.object({
-  role: yup
-    .mixed<(typeof creatableRoles)[number]>()
-    .oneOf([...creatableRoles])
-    .optional(),
   isActive: yup.boolean().optional(),
   joinYearId: yup.string().optional(),
   majorId: yup.string().optional(),
-  accessGroupId: yup.string().nullable().optional(),
 });
 export type EditUserSchema = yup.InferType<typeof editUserSchema>;

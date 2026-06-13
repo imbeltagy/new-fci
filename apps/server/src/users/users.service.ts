@@ -113,6 +113,13 @@ export class UsersService {
     await this.repo.hardDelete(id);
   }
 
+  async getMySubjects(userId: string, role: string) {
+    if (role === "student") {
+      return { subjects: await this.repo.findStudentSubjects(userId) };
+    }
+    return this.repo.findStaffSubjects(userId);
+  }
+
   async sendCredentials(userIds: string[]) {
     const users = await this.repo.findManyByIds(userIds);
     const sent: string[] = [];

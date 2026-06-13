@@ -130,4 +130,56 @@ export class UsersRepository {
   async hardDelete(id: string) {
     await this.db.user.delete({ where: { id } });
   }
+
+  async findStudentSubjects(userId: string) {
+    return this.db.subjectEnrollment.findMany({
+      where: { userId },
+      include: {
+        subject: {
+          select: {
+            id: true,
+            code: true,
+            name: true,
+            semester: true,
+            joinYear: { select: { id: true, year: true } },
+            major: { select: { id: true, name: true, code: true } },
+            staffAssignments: {
+              include: { user: { select: { id: true, name: true, role: true } } },
+            },
+          },
+        },
+      },
+      orderBy: { subject: { name: "asc" } },
+    });
+  }
+
+  async findStaffSubjects(userId: string) {
+    const [subjects, majors] = await Promise.all([
+      this.db.staffSubjectAssignment.findMany({
+        where: { userId },
+        include: {
+          subject: {
+            select: {
+              id: true,
+              code: true,
+              name: true,
+              semester: true,
+              joinYear: { select: { id: true, year: true } },
+              major: { select: { id: true, name: true, code: true } },
+            },
+          },
+        },
+        orderBy: { subject: { name: "asc" } },
+      }),
+      this.db.staffMajorAssignment.findMany({
+        where: { userId },
+        include: {
+          major: { select: { id: true, name: true, code: true } },
+          joinYear: { select: { id: true, year: true } },
+        },
+        orderBy: { createdAt: "asc" },
+      }),
+    ]);
+    return { subjects, majorAssignments: majors };
+  }
 }

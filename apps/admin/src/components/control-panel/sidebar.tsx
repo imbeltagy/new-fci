@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, LogOut, Users, Shield } from "lucide-react";
+import { LayoutDashboard, LogOut, Users, Shield, CalendarDays, GraduationCap, BookOpen } from "lucide-react";
 import { toast } from "sonner";
 
 import { adminLogout } from "@repo/common/actions/auth.action";
@@ -14,6 +14,9 @@ import { useAuthStore } from "@repo/common/stores/auth.store";
 const NAV_ITEMS = [
   { name: "Users", path: "/users", icon: Users },
   { name: "Access Groups", path: "/access-groups", icon: Shield },
+  { name: "Join Years", path: "/join-years", icon: CalendarDays },
+  { name: "Majors", path: "/majors", icon: GraduationCap },
+  { name: "Subjects", path: "/subjects", icon: BookOpen },
 ];
 
 export function Sidebar() {
