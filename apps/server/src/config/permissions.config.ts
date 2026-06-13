@@ -3,6 +3,7 @@ export enum Permission {
   USERS_CREATE = "users:create",
   USERS_UPDATE = "users:update",
   USERS_DEACTIVATE = "users:deactivate",
+  USERS_DELETE = "users:delete",
   ACCESS_GROUPS_MANAGE = "access_groups:manage",
   TICKETS_MANAGE = "tickets:manage",
   ANNOUNCEMENTS_MANAGE = "announcements:manage",
@@ -29,6 +30,7 @@ export const permissionsConfig: Record<string, PermissionGroup> = {
       { label: "Create", value: Permission.USERS_CREATE },
       { label: "Update", value: Permission.USERS_UPDATE },
       { label: "Deactivate", value: Permission.USERS_DEACTIVATE },
+      { label: "Delete", value: Permission.USERS_DELETE },
     ],
   },
   accessGroups: {

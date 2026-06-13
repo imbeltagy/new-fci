@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Send } from "lucide-react";
+import { Plus, Send, Trash2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { sendCredentials } from "@repo/common/actions/users.action";
+import { deleteUser, sendCredentials } from "@repo/common/actions/users.action";
+import { ConfirmDialog } from "@repo/common/components/custom/confirm-dialog";
 import { Button } from "@repo/common/components/ui/button";
 import {
   Dialog,
@@ -111,6 +112,7 @@ export function UsersListView() {
   const [roleFilter, setRoleFilter] = useState<UserRole | "all">("all");
   const [createOpen, setCreateOpen] = useState(false);
   const [editUser, setEditUser] = useState<User | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
   const debouncedSearch = useDebounce(search, 300);
 
   const { data, isPending, isError } = useListUsersQuery({
@@ -131,6 +133,17 @@ export function UsersListView() {
 
   function invalidate() {
     queryClient.invalidateQueries({ queryKey: USER_KEYS.all });
+  }
+
+  async function handleDelete() {
+    if (!deleteTarget) return;
+    const res = await deleteUser(deleteTarget.id);
+    if (!res.success) {
+      toast.error(res.message);
+      throw new Error(res.message);
+    }
+    toast.success("User deleted.");
+    invalidate();
   }
 
   return (
@@ -235,6 +248,15 @@ export function UsersListView() {
                         Send Credentials
                       </Button>
                     )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:text-destructive"
+                      onClick={() => setDeleteTarget(user)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5 mr-1" />
+                      Delete
+                    </Button>
                   </div>
                 </TableCell>
               </TableRow>
@@ -252,6 +274,14 @@ export function UsersListView() {
         user={editUser}
         onClose={() => setEditUser(null)}
         onUpdated={invalidate}
+      />
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Delete User"
+        message={`Permanently delete "${deleteTarget?.name ?? ""}"? This cannot be undone.`}
+        onClose={() => setDeleteTarget(null)}
+        onSubmit={handleDelete}
       />
     </div>
   );

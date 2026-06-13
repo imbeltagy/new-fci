@@ -2,7 +2,13 @@
 
 import { API_ROUTES } from "../constants/api";
 import { api } from "../lib/api-client";
-import type { CreateUserBody, ListUsersFilter, UpdateMeBody, UpdateUserBody, User } from "../types/user";
+import type {
+  CreateUserBody,
+  ListUsersFilter,
+  UpdateMeBody,
+  UpdateUserBody,
+  User,
+} from "../types/user";
 
 export async function listUsers(filter?: ListUsersFilter) {
   return api.get<{ users: User[] }>(API_ROUTES.users.list, {
@@ -13,14 +19,14 @@ export async function listUsers(filter?: ListUsersFilter) {
 export async function createUser(body: CreateUserBody) {
   return api.post<{ user: User; temporaryPassword: string }>(
     API_ROUTES.users.create,
-    body
+    body,
   );
 }
 
 export async function createManyUsers(users: CreateUserBody[]) {
   return api.post<{ email: string; temporaryPassword: string }[]>(
     API_ROUTES.users.bulk,
-    { users }
+    { users },
   );
 }
 
@@ -35,7 +41,7 @@ export async function updateMe(body: UpdateMeBody) {
 export async function sendCredentials(userIds: string[]) {
   return api.post<{ sent: string[]; skipped: string[] }>(
     API_ROUTES.users.sendCredentials,
-    { userIds }
+    { userIds },
   );
 }
 
@@ -45,4 +51,8 @@ export async function getUser(id: string) {
 
 export async function updateUser(id: string, body: UpdateUserBody) {
   return api.patch<{ user: User }>(API_ROUTES.users.updateById(id), body);
+}
+
+export async function deleteUser(id: string) {
+  return api.delete<null>(API_ROUTES.users.deleteById(id));
 }

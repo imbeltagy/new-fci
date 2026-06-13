@@ -22,6 +22,7 @@ export const API_ROUTES = {
     sendCredentials: "/users/send-credentials",
     getById: (id: string) => `/users/${id}`,
     updateById: (id: string) => `/users/${id}`,
+    deleteById: (id: string) => `/users/${id}`,
   },
 
   accessGroups: {

@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { Plus, Users, Pencil, Trash2 } from "lucide-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { deleteGroup } from "@repo/common/actions/access-groups.action";
-import { updateUser } from "@repo/common/actions/users.action";
+import { listUsers, updateUser } from "@repo/common/actions/users.action";
 import { ConfirmDialog } from "@repo/common/components/custom/confirm-dialog";
 import { Button } from "@repo/common/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@repo/common/components/ui/dialog";
@@ -15,6 +15,7 @@ import { Separator } from "@repo/common/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@repo/common/components/ui/table";
 import { ACCESS_GROUP_KEYS, useListGroupsQuery } from "@repo/common/queries/access-groups.query";
 import { USER_KEYS, useListUsersQuery } from "@repo/common/queries/users.query";
+import type { ListUsersFilter } from "@repo/common/types/user";
 import type { AccessGroup } from "@repo/common/types/access-group";
 import { PageHeader } from "@/components/control-panel/page-header";
 import { GroupForm } from "../group-form";
@@ -64,12 +65,21 @@ function AssignUsersDialog({ group, onClose }: AssignUsersDialogProps) {
     return () => clearTimeout(t);
   }, [search]);
 
-  const { data: assignedData, isLoading: loadingAssigned } = useListUsersQuery(
-    group ? { accessGroupId: group.id } : undefined
-  );
-  const { data: searchData, isLoading: loadingSearch } = useListUsersQuery(
-    debouncedSearch ? { search: debouncedSearch } : undefined
-  );
+  const assignedFilter: ListUsersFilter | undefined = group
+    ? { accessGroupId: group.id, role: "it" }
+    : undefined;
+  const searchFilter: ListUsersFilter = {
+    role: "it",
+    ...(debouncedSearch && { search: debouncedSearch }),
+  };
+
+  const { data: assignedData, isLoading: loadingAssigned } = useListUsersQuery(assignedFilter);
+
+  const { data: searchData, isLoading: loadingSearch } = useQuery({
+    queryKey: USER_KEYS.list(searchFilter),
+    queryFn: () => listUsers(searchFilter),
+    enabled: !!group,
+  });
 
   const assignedUsers = assignedData?.data?.users ?? [];
   const searchResults = (searchData?.data?.users ?? []).filter(

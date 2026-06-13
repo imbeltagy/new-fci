@@ -3,9 +3,18 @@
 import { COOKIES } from "../../constants/cookies";
 import { deleteCookie, getCookie, setCookie } from "../cookies";
 import { apiLogger } from "./api-logger";
-import { classifyFetchError, extractErrorMessage } from "./error-handlers/extract-error";
+import {
+  classifyFetchError,
+  extractErrorMessage,
+} from "./error-handlers/extract-error";
 import { buildUrl, formDataToObject, getResponsePayload } from "./helpers";
-import type { APIMethod, ApiClientErrorResponse, ApiClientResponse, ApiClientSuccessResponse, RequestOptions } from "./types";
+import type {
+  APIMethod,
+  ApiClientErrorResponse,
+  ApiClientResponse,
+  ApiClientSuccessResponse,
+  RequestOptions,
+} from "./types";
 
 const GENERIC_ERROR = "Something went wrong. Please try again.";
 type AuthType = "session" | "jwt";
@@ -35,23 +44,29 @@ class ApiClient {
     return { Authorization: `Bearer ${token}` };
   }
 
-  private errorResponse(status: number, message: string): ApiClientErrorResponse {
+  private errorResponse(
+    status: number,
+    message: string,
+  ): ApiClientErrorResponse {
     return { success: false, message, data: null, status };
   }
 
   private async handleUnauthorized<T>(
     path: string,
     method: APIMethod,
-    options?: RequestOptions
+    options?: RequestOptions,
   ): Promise<ApiClientResponse<T>> {
     try {
       if (this.authType === "session") {
         const csrf = getCookie(COOKIES.CSRF_TOKEN) ?? "";
-        const refreshRes = await fetch(buildUrl(this.baseUrl, "/auth/admin/refresh"), {
-          method: "POST",
-          credentials: "include",
-          headers: { "X-CSRF-Token": csrf },
-        });
+        const refreshRes = await fetch(
+          buildUrl(this.baseUrl, "/auth/admin/refresh"),
+          {
+            method: "POST",
+            credentials: "include",
+            headers: { "X-CSRF-Token": csrf },
+          },
+        );
         if (refreshRes.ok) {
           return this.request<T>(path, method, options, true);
         }
@@ -65,16 +80,21 @@ class ApiClient {
         const refreshToken = getCookie(COOKIES.REFRESH_TOKEN);
         if (!refreshToken) throw new Error("no_refresh_token");
 
-        const refreshRes = await fetch(buildUrl(this.baseUrl, "/auth/refresh"), {
-          method: "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ refreshToken }),
-        });
+        const refreshRes = await fetch(
+          buildUrl(this.baseUrl, "/auth/refresh"),
+          {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ refreshToken }),
+          },
+        );
         if (refreshRes.ok) {
           const data = await refreshRes.json();
-          if (data?.accessToken) setCookie(COOKIES.ACCESS_TOKEN, data.accessToken);
-          if (data?.refreshToken) setCookie(COOKIES.REFRESH_TOKEN, data.refreshToken);
+          if (data?.accessToken)
+            setCookie(COOKIES.ACCESS_TOKEN, data.accessToken);
+          if (data?.refreshToken)
+            setCookie(COOKIES.REFRESH_TOKEN, data.refreshToken);
           return this.request<T>(path, method, options, true);
         }
         // Refresh failed — clear tokens
@@ -94,13 +114,17 @@ class ApiClient {
     path: string,
     method: APIMethod,
     options?: RequestOptions,
-    retried = false
+    retried = false,
   ): Promise<ApiClientResponse<T>> {
     const url = buildUrl(this.baseUrl, path, options?.params, options?.queries);
+    console.log(url);
 
     try {
       const authHeaders = this.buildAuthHeaders();
-      const headers: Record<string, string> = { ...authHeaders, ...(options?.headers ?? {}) };
+      const headers: Record<string, string> = {
+        ...authHeaders,
+        ...(options?.headers ?? {}),
+      };
 
       if (options?.body && !(options.body instanceof FormData)) {
         if (options.body instanceof URLSearchParams) {
@@ -115,7 +139,8 @@ class ApiClient {
         headers,
         credentials: "include",
         body:
-          options?.body instanceof FormData || options?.body instanceof URLSearchParams
+          options?.body instanceof FormData ||
+          options?.body instanceof URLSearchParams
             ? (options.body as BodyInit)
             : options?.body !== undefined
               ? JSON.stringify(options.body)
@@ -189,14 +214,20 @@ class ApiClient {
       if (error instanceof Error && "digest" in error) throw error;
 
       if (error instanceof Error) {
-        if (error.message === "no_access_token" || error.message === "no_csrf_token") {
+        if (
+          error.message === "no_access_token" ||
+          error.message === "no_csrf_token"
+        ) {
           return this.errorResponse(401, "Unauthorized");
         }
       }
 
       const { isNetwork, isTimeout } = classifyFetchError(error);
       if (isNetwork) {
-        return this.errorResponse(0, "Network error. Please check your connection.");
+        return this.errorResponse(
+          0,
+          "Network error. Please check your connection.",
+        );
       }
       if (isTimeout) {
         return this.errorResponse(0, "Request timed out. Please try again.");
@@ -213,23 +244,41 @@ class ApiClient {
     }
   }
 
-  get<T = void>(path: string, options?: Omit<RequestOptions, "body">): Promise<ApiClientResponse<T>> {
+  get<T = void>(
+    path: string,
+    options?: Omit<RequestOptions, "body">,
+  ): Promise<ApiClientResponse<T>> {
     return this.request<T>(path, "GET", options);
   }
 
-  post<T = void>(path: string, body: object | FormData, options?: Omit<RequestOptions, "body">): Promise<ApiClientResponse<T>> {
+  post<T = void>(
+    path: string,
+    body: object | FormData,
+    options?: Omit<RequestOptions, "body">,
+  ): Promise<ApiClientResponse<T>> {
     return this.request<T>(path, "POST", { ...options, body });
   }
 
-  patch<T = void>(path: string, body: object | FormData, options?: Omit<RequestOptions, "body">): Promise<ApiClientResponse<T>> {
+  patch<T = void>(
+    path: string,
+    body: object | FormData,
+    options?: Omit<RequestOptions, "body">,
+  ): Promise<ApiClientResponse<T>> {
     return this.request<T>(path, "PATCH", { ...options, body });
   }
 
-  put<T = void>(path: string, body: object | FormData, options?: Omit<RequestOptions, "body">): Promise<ApiClientResponse<T>> {
+  put<T = void>(
+    path: string,
+    body: object | FormData,
+    options?: Omit<RequestOptions, "body">,
+  ): Promise<ApiClientResponse<T>> {
     return this.request<T>(path, "PUT", { ...options, body });
   }
 
-  delete<T = void>(path: string, options?: Omit<RequestOptions, "body">): Promise<ApiClientResponse<T>> {
+  delete<T = void>(
+    path: string,
+    options?: Omit<RequestOptions, "body">,
+  ): Promise<ApiClientResponse<T>> {
     return this.request<T>(path, "DELETE", options);
   }
 }
@@ -250,4 +299,8 @@ export const apiGuest = new ApiClient({
   guest: true,
 });
 
-export type { ApiClientResponse, ApiClientSuccessResponse, ApiClientErrorResponse };
+export type {
+  ApiClientResponse,
+  ApiClientSuccessResponse,
+  ApiClientErrorResponse,
+};

@@ -7,6 +7,7 @@ interface ListUsersFilter {
   isActive?: boolean;
   search?: string;
   accessGroupId?: string;
+  excludeRoles?: Role[];
 }
 
 export class UsersRepository {
@@ -15,9 +16,17 @@ export class UsersRepository {
   }
 
   async findAll(filter: ListUsersFilter) {
+    const roleFilter =
+      filter.excludeRoles?.length
+        ? {
+            ...(filter.role && { equals: filter.role }),
+            notIn: filter.excludeRoles,
+          }
+        : filter.role ?? undefined;
+
     return this.db.user.findMany({
       where: {
-        ...(filter.role && { role: filter.role }),
+        ...(roleFilter !== undefined && { role: roleFilter }),
         ...(filter.isActive !== undefined && { isActive: filter.isActive }),
         ...(filter.accessGroupId && { accessGroupId: filter.accessGroupId }),
         ...(filter.search && {
@@ -116,5 +125,9 @@ export class UsersRepository {
       where: { id: { in: ids } },
       select: { id: true, email: true, mustChangePassword: true, tempPassword: true },
     });
+  }
+
+  async hardDelete(id: string) {
+    await this.db.user.delete({ where: { id } });
   }
 }

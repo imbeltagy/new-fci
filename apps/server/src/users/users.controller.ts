@@ -11,12 +11,16 @@ const usersService = new UsersService();
 
 export async function listUsers(req: Request, res: Response) {
   try {
-    const { role, isActive, search, accessGroupId } = req.query as Record<string, string | undefined>;
+    const { role, isActive, search, accessGroupId } = req.query as Record<
+      string,
+      string | undefined
+    >;
     const users = await usersService.listUsers({
       role: role as any,
       isActive: isActive !== undefined ? isActive === "true" : undefined,
       search,
       accessGroupId,
+      requesterRole: req.user!.role,
     });
     res.json({ users });
   } catch (err: any) {
@@ -26,7 +30,9 @@ export async function listUsers(req: Request, res: Response) {
 
 export async function createUser(req: Request, res: Response) {
   try {
-    res.status(201).json(await usersService.createUser(req.body as CreateUserDto));
+    res
+      .status(201)
+      .json(await usersService.createUser(req.body as CreateUserDto));
   } catch (err: any) {
     res.status(err.status ?? 500).json({ message: err.message });
   }
@@ -35,7 +41,9 @@ export async function createUser(req: Request, res: Response) {
 export async function createManyUsers(req: Request, res: Response) {
   try {
     const { users } = req.body as CreateManyUsersDto;
-    res.status(201).json({ created: await usersService.createManyUsers(users) });
+    res
+      .status(201)
+      .json({ created: await usersService.createManyUsers(users) });
   } catch (err: any) {
     res.status(err.status ?? 500).json({ message: err.message });
   }
@@ -88,6 +96,15 @@ export async function updateUser(req: Request, res: Response) {
         req.body as UpdateUserDto,
       ),
     });
+  } catch (err: any) {
+    res.status(err.status ?? 500).json({ message: err.message });
+  }
+}
+
+export async function deleteUser(req: Request, res: Response) {
+  try {
+    await usersService.deleteUser(req.params["id"] as string, req.user!.role);
+    res.status(204).send();
   } catch (err: any) {
     res.status(err.status ?? 500).json({ message: err.message });
   }

@@ -1,6 +1,6 @@
 import { randomBytes } from "crypto";
 
-import type { Role } from "@prisma/client";
+import { Role } from "@prisma/client";
 
 import { hashPassword } from "../lib/bcrypt";
 import { sendCredentialsEmail } from "../lib/email";
@@ -15,13 +15,24 @@ const generateTempPassword = () => randomBytes(9).toString("base64url");
 export class UsersService {
   constructor(private readonly repo = new UsersRepository()) {}
 
-  async listUsers(filter: { role?: Role; isActive?: boolean; search?: string; accessGroupId?: string }) {
-    return this.repo.findAll(filter);
+  async listUsers(filter: {
+    role?: Role;
+    isActive?: boolean;
+    search?: string;
+    accessGroupId?: string;
+    requesterRole?: Role;
+  }) {
+    const excludeRoles: Role[] =
+      filter.requesterRole === Role.it && !filter.role
+        ? [Role.it, Role.superadmin]
+        : [];
+    return this.repo.findAll({ ...filter, excludeRoles });
   }
 
   async getUser(id: string) {
     const user = await this.repo.findById(id);
-    if (!user) throw Object.assign(new Error("User not found"), { status: 404 });
+    if (!user)
+      throw Object.assign(new Error("User not found"), { status: 404 });
     return user;
   }
 
@@ -67,11 +78,39 @@ export class UsersService {
       throw Object.assign(new Error("User not found"), { status: 404 });
     }
 
-    if ("accessGroupId" in dto && dto.accessGroupId !== existingUser.accessGroupId) {
+    if ("accessGroupId" in dto && dto.accessGroupId != null) {
+      if (existingUser.role !== Role.it) {
+        throw Object.assign(
+          new Error("Only IT users can be assigned to access groups"),
+          { status: 400 },
+        );
+      }
+    }
+
+    if (
+      "accessGroupId" in dto &&
+      dto.accessGroupId !== existingUser.accessGroupId
+    ) {
       await deleteUserSessions([id]);
     }
 
     return this.repo.adminUpdate(id, dto);
+  }
+
+  async deleteUser(id: string, requesterRole: Role) {
+    const user = await this.repo.findById(id);
+    if (!user)
+      throw Object.assign(new Error("User not found"), { status: 404 });
+
+    if (
+      requesterRole === Role.it &&
+      (user.role === Role.it || user.role === Role.superadmin)
+    ) {
+      throw Object.assign(new Error("Forbidden"), { status: 403 });
+    }
+
+    await deleteUserSessions([id]);
+    await this.repo.hardDelete(id);
   }
 
   async sendCredentials(userIds: string[]) {

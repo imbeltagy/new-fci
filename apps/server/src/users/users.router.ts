@@ -81,3 +81,9 @@ usersRouter.patch(
   validateBody(UpdateUserDto),
   usersController.updateUser,
 );
+
+usersRouter.delete(
+  "/:id",
+  auth({ authorization: "session", roles: anyAdmin, permissions: [Permission.USERS_DELETE] }),
+  usersController.deleteUser,
+);
