@@ -25,6 +25,7 @@ model User {
   coverUrl           String?
   isActive           Boolean      @default(true)
   mustChangePassword Boolean      @default(true)
+  tempPassword       String?
   sendOnce           Boolean      @default(false)
   whatsapp           String?
   accessGroupId      String?

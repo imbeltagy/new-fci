@@ -11,11 +11,12 @@ const usersService = new UsersService();
 
 export async function listUsers(req: Request, res: Response) {
   try {
-    const { role, isActive, search } = req.query as Record<string, string | undefined>;
+    const { role, isActive, search, accessGroupId } = req.query as Record<string, string | undefined>;
     const users = await usersService.listUsers({
       role: role as any,
       isActive: isActive !== undefined ? isActive === "true" : undefined,
       search,
+      accessGroupId,
     });
     res.json({ users });
   } catch (err: any) {

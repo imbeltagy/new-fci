@@ -6,6 +6,7 @@ interface ListUsersFilter {
   role?: Role;
   isActive?: boolean;
   search?: string;
+  accessGroupId?: string;
 }
 
 export class UsersRepository {
@@ -18,6 +19,7 @@ export class UsersRepository {
       where: {
         ...(filter.role && { role: filter.role }),
         ...(filter.isActive !== undefined && { isActive: filter.isActive }),
+        ...(filter.accessGroupId && { accessGroupId: filter.accessGroupId }),
         ...(filter.search && {
           OR: [
             { name: { contains: filter.search, mode: "insensitive" } },
@@ -70,6 +72,7 @@ export class UsersRepository {
   async create(data: {
     email: string;
     passwordHash: string;
+    tempPassword: string;
     role: Role;
     name: string;
     joinYearId?: string;
@@ -82,6 +85,7 @@ export class UsersRepository {
     users: {
       email: string;
       passwordHash: string;
+      tempPassword: string;
       role: Role;
       name: string;
       joinYearId?: string;
@@ -110,17 +114,7 @@ export class UsersRepository {
   async findManyByIds(ids: string[]) {
     return this.db.user.findMany({
       where: { id: { in: ids } },
-      select: { id: true, email: true, sendOnce: true, mustChangePassword: true },
-    });
-  }
-
-  async updatePasswordAndSendOnce(
-    id: string,
-    passwordHash: string,
-  ): Promise<void> {
-    await this.db.user.update({
-      where: { id },
-      data: { passwordHash, sendOnce: true, mustChangePassword: true },
+      select: { id: true, email: true, mustChangePassword: true, tempPassword: true },
     });
   }
 }

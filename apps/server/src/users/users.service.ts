@@ -15,7 +15,7 @@ const generateTempPassword = () => randomBytes(9).toString("base64url");
 export class UsersService {
   constructor(private readonly repo = new UsersRepository()) {}
 
-  async listUsers(filter: { role?: Role; isActive?: boolean; search?: string }) {
+  async listUsers(filter: { role?: Role; isActive?: boolean; search?: string; accessGroupId?: string }) {
     return this.repo.findAll(filter);
   }
 
@@ -28,7 +28,7 @@ export class UsersService {
   async createUser(dto: CreateUserDto) {
     const tempPassword = generateTempPassword();
     const passwordHash = await hashPassword(tempPassword);
-    const user = await this.repo.create({ ...dto, passwordHash });
+    const user = await this.repo.create({ ...dto, passwordHash, tempPassword });
     return { user, temporaryPassword: tempPassword };
   }
 
@@ -42,7 +42,11 @@ export class UsersService {
     );
 
     await this.repo.createMany(
-      prepared.map(({ dto, passwordHash }) => ({ ...dto, passwordHash })),
+      prepared.map(({ dto, passwordHash, tempPassword }) => ({
+        ...dto,
+        passwordHash,
+        tempPassword,
+      })),
     );
 
     return prepared.map(({ dto, tempPassword }) => ({
@@ -75,15 +79,22 @@ export class UsersService {
     const sent: string[] = [];
     const skipped: string[] = [];
 
-    await Promise.all(
-      users.map(async (user) => {
-        const tempPassword = generateTempPassword();
-        const passwordHash = await hashPassword(tempPassword);
-        await this.repo.updatePasswordAndSendOnce(user.id, passwordHash);
-        await sendCredentialsEmail(user.email, tempPassword);
-        sent.push(user.id);
-      }),
-    );
+    for (const user of users) {
+      if (!user.mustChangePassword) {
+        throw Object.assign(
+          new Error("User has already changed their password"),
+          { status: 400 },
+        );
+      }
+
+      if (!user.tempPassword) {
+        skipped.push(user.id);
+        continue;
+      }
+
+      await sendCredentialsEmail(user.email, user.tempPassword);
+      sent.push(user.id);
+    }
 
     const foundIds = new Set(users.map((u) => u.id));
     userIds.filter((id) => !foundIds.has(id)).forEach((id) => skipped.push(id));
