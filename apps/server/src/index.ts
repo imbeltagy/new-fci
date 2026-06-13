@@ -27,12 +27,13 @@ const PORT = Number(process.env.PORT) || 4000;
 
 const app = express();
 
+const allowedOrigins = [
+  ...(process.env.ALLOWED_ORIGINS?.split(",").map((o) => o.trim()) ?? []),
+];
+
 app.use(
   cors({
-    origin: [
-      process.env.CLIENT_URL ?? "http://localhost:3000",
-      process.env.ADMIN_URL ?? "http://localhost:3001",
-    ],
+    origin: allowedOrigins,
     credentials: true,
   }),
 );
@@ -61,9 +62,9 @@ app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 const filesService = new FilesService();
 cron.schedule("0 4 * * *", () => {
-  filesService.cleanDeletedFiles().catch((err) =>
-    console.error("Cron: file cleanup failed", err),
-  );
+  filesService
+    .cleanDeletedFiles()
+    .catch((err) => console.error("Cron: file cleanup failed", err));
 });
 
 const start = async () => {
