@@ -28,8 +28,10 @@ const PORT = Number(process.env.PORT) || 4000;
 const app = express();
 
 const allowedOrigins = [
+  process.env.CLIENT_URL,
+  process.env.ADMIN_URL,
   ...(process.env.ALLOWED_ORIGINS?.split(",").map((o) => o.trim()) ?? []),
-];
+].filter(Boolean) as string[];
 
 app.use(
   cors({

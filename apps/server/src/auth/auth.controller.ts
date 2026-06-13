@@ -13,6 +13,7 @@ const COOKIE_BASE = {
   httpOnly: false,
   secure: process.env.NODE_ENV === "production",
   sameSite: "strict" as const,
+  ...(process.env.COOKIE_DOMAIN ? { domain: process.env.COOKIE_DOMAIN } : {}),
 };
 
 export async function clientLogin(req: Request, res: Response) {
