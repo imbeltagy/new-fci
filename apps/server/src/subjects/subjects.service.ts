@@ -88,7 +88,8 @@ export class SubjectsService {
       const allowed =
         role === "student"
           ? await this.repo.isEnrolled(userId, subjectId)
-          : await this.repo.isStaffAssigned(userId, subjectId);
+          : (await this.repo.isStaffAssigned(userId, subjectId)) ||
+            (await this.repo.isMajorStaffForSubject(userId, subjectId));
       if (!allowed) {
         throw Object.assign(new Error("You don't have access to this subject"), { status: 403 });
       }

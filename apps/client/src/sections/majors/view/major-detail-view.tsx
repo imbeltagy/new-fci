@@ -8,6 +8,7 @@ import { ArrowLeft, MessagesSquare } from "lucide-react";
 import { Button } from "@repo/common/components/ui/button";
 import { Input } from "@repo/common/components/ui/input";
 import { useMajorDetailQuery } from "@repo/common/queries/majors.query";
+import { useMySubjectsQuery } from "@repo/common/queries/subjects.query";
 import { useAuthStore } from "@repo/common/stores/auth.store";
 import type { MajorDetailPerson } from "@repo/common/types/major";
 import { MessageButton } from "@/components/message-button";
@@ -58,8 +59,11 @@ export function MajorDetailView({
 }) {
   const router = useRouter();
   const currentUserId = useAuthStore((s) => s.user?.id);
+  const role = useAuthStore((s) => s.user?.role);
+  const isStudent = role === "student";
   const [search, setSearch] = useState("");
   const { data, isPending, isError } = useMajorDetailQuery(majorId, joinYearId);
+  const { data: mySubjectsData } = useMySubjectsQuery();
 
   const detail = data?.data;
 
@@ -71,6 +75,19 @@ export function MajorDetailView({
   }
 
   const { major, joinYear, channelId, subjects, teachers, students } = detail;
+
+  const enrolledSubjectIds = isStudent
+    ? new Set(
+        (mySubjectsData?.data && "subjects" in mySubjectsData.data
+          ? mySubjectsData.data.subjects
+          : []
+        ).map((e) => e.subjectId),
+      )
+    : null;
+
+  const visibleSubjects = enrolledSubjectIds
+    ? subjects.filter((s) => enrolledSubjectIds.has(s.id))
+    : subjects;
   const filteredStudents = search
     ? students.filter((s) => s.name.toLowerCase().includes(search.toLowerCase()))
     : students;
@@ -99,13 +116,13 @@ export function MajorDetailView({
 
       <div className="space-y-2">
         <h2 className="text-sm font-semibold text-muted-foreground">
-          Subjects ({subjects.length})
+          Subjects ({visibleSubjects.length})
         </h2>
-        {subjects.length === 0 ? (
+        {visibleSubjects.length === 0 ? (
           <p className="text-sm text-muted-foreground">No subjects.</p>
         ) : (
           <div className="space-y-2">
-            {subjects.map((s) => (
+            {visibleSubjects.map((s) => (
               <button
                 key={s.id}
                 onClick={() => router.push(`/subjects/${s.id}`)}

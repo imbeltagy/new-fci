@@ -151,4 +151,17 @@ export class SubjectsRepository {
     });
     return !!row;
   }
+
+  async isMajorStaffForSubject(userId: string, subjectId: string) {
+    const subject = await this.db.subject.findUnique({
+      where: { id: subjectId },
+      select: { majorId: true, joinYearId: true },
+    });
+    if (!subject) return false;
+    const row = await this.db.staffMajorAssignment.findFirst({
+      where: { userId, majorId: subject.majorId, joinYearId: subject.joinYearId },
+      select: { id: true },
+    });
+    return !!row;
+  }
 }
