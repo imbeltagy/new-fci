@@ -10,6 +10,8 @@ const svc = new RoomsService();
 
 const isAdminRole = (role: Role) => role === Role.it || role === Role.superadmin;
 
+// ── Rooms ─────────────────────────────────────────────────────────────────
+
 export async function listRooms(req: Request, res: Response) {
   try {
     const { sub, role } = req.user!;
@@ -50,23 +52,152 @@ export async function deleteRoom(req: Request, res: Response) {
   }
 }
 
-export async function getMessages(req: Request, res: Response) {
+// ── Posts ─────────────────────────────────────────────────────────────────
+
+export async function listPosts(req: Request, res: Response) {
   try {
     const { sub, role } = req.user!;
     const { before, limit } = req.query as Record<string, string | undefined>;
-    const result = await svc.getMessages(
+    const result = await svc.listPosts(
       req.params["id"] as string,
       sub,
       role,
       isAdminRole(role),
       before,
-      Math.min(Number(limit) || 30, 100),
+      Math.min(Number(limit) || 20, 50),
     );
     res.json(result);
   } catch (err: any) {
     res.status(err.status ?? 500).json({ message: err.message });
   }
 }
+
+export async function getPost(req: Request, res: Response) {
+  try {
+    const { sub, role } = req.user!;
+    const post = await svc.getPost(
+      req.params["id"] as string,
+      req.params["postId"] as string,
+      sub,
+      role,
+      isAdminRole(role),
+    );
+    res.json({ post });
+  } catch (err: any) {
+    res.status(err.status ?? 500).json({ message: err.message });
+  }
+}
+
+export async function createPost(req: Request, res: Response) {
+  try {
+    const { sub, role } = req.user!;
+    const content = (req.body?.content as string | undefined) ?? "";
+    const post = await svc.createPost(req.params["id"] as string, sub, role, content, req.file);
+    res.status(201).json({ post });
+  } catch (err: any) {
+    res.status(err.status ?? 500).json({ message: err.message });
+  }
+}
+
+export async function deletePost(req: Request, res: Response) {
+  try {
+    const { sub, role } = req.user!;
+    await svc.deletePost(
+      req.params["id"] as string,
+      req.params["postId"] as string,
+      sub,
+      role,
+      isAdminRole(role),
+    );
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(err.status ?? 500).json({ message: err.message });
+  }
+}
+
+export async function likePost(req: Request, res: Response) {
+  try {
+    const { sub, role } = req.user!;
+    const result = await svc.likePost(
+      req.params["id"] as string,
+      req.params["postId"] as string,
+      sub,
+      role,
+    );
+    res.json(result);
+  } catch (err: any) {
+    res.status(err.status ?? 500).json({ message: err.message });
+  }
+}
+
+export async function unlikePost(req: Request, res: Response) {
+  try {
+    const { sub, role } = req.user!;
+    const result = await svc.unlikePost(
+      req.params["id"] as string,
+      req.params["postId"] as string,
+      sub,
+      role,
+    );
+    res.json(result);
+  } catch (err: any) {
+    res.status(err.status ?? 500).json({ message: err.message });
+  }
+}
+
+// ── Comments ──────────────────────────────────────────────────────────────
+
+export async function listComments(req: Request, res: Response) {
+  try {
+    const { sub, role } = req.user!;
+    const comments = await svc.getComments(
+      req.params["id"] as string,
+      req.params["postId"] as string,
+      sub,
+      role,
+      isAdminRole(role),
+    );
+    res.json({ comments });
+  } catch (err: any) {
+    res.status(err.status ?? 500).json({ message: err.message });
+  }
+}
+
+export async function createComment(req: Request, res: Response) {
+  try {
+    const { sub, role } = req.user!;
+    const { content, parentId } = req.body as { content: string; parentId?: string };
+    const comment = await svc.createComment(
+      req.params["id"] as string,
+      req.params["postId"] as string,
+      sub,
+      role,
+      content ?? "",
+      parentId ?? null,
+    );
+    res.status(201).json({ comment });
+  } catch (err: any) {
+    res.status(err.status ?? 500).json({ message: err.message });
+  }
+}
+
+export async function deleteComment(req: Request, res: Response) {
+  try {
+    const { sub, role } = req.user!;
+    await svc.deleteComment(
+      req.params["id"] as string,
+      req.params["postId"] as string,
+      req.params["commentId"] as string,
+      sub,
+      isAdminRole(role),
+    );
+    res.status(204).send();
+  } catch (err: any) {
+    res.status(err.status ?? 500).json({ message: err.message });
+  }
+}
+
+// ── Pins ──────────────────────────────────────────────────────────────────
 
 export async function getPins(req: Request, res: Response) {
   try {
@@ -78,44 +209,27 @@ export async function getPins(req: Request, res: Response) {
   }
 }
 
-export async function pinMessage(req: Request, res: Response) {
+export async function pinPost(req: Request, res: Response) {
   try {
     const { sub, role } = req.user!;
-    await svc.pinMessage(
-      req.params["id"] as string,
-      req.params["messageId"] as string,
-      sub,
-      role,
-    );
+    await svc.pinPost(req.params["id"] as string, req.params["postId"] as string, sub, role);
     res.status(204).send();
   } catch (err: any) {
     res.status(err.status ?? 500).json({ message: err.message });
   }
 }
 
-export async function unpinMessage(req: Request, res: Response) {
+export async function unpinPost(req: Request, res: Response) {
   try {
     const { sub, role } = req.user!;
-    await svc.unpinMessage(
-      req.params["id"] as string,
-      req.params["messageId"] as string,
-      sub,
-      role,
-    );
+    await svc.unpinPost(req.params["id"] as string, req.params["postId"] as string, sub, role);
     res.status(204).send();
   } catch (err: any) {
     res.status(err.status ?? 500).json({ message: err.message });
   }
 }
 
-export async function deleteMessage(req: Request, res: Response) {
-  try {
-    await svc.deleteMessage(req.params["id"] as string, req.params["messageId"] as string);
-    res.status(204).send();
-  } catch (err: any) {
-    res.status(err.status ?? 500).json({ message: err.message });
-  }
-}
+// ── Moderation ────────────────────────────────────────────────────────────
 
 export async function listMutes(req: Request, res: Response) {
   try {

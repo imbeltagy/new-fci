@@ -12,8 +12,6 @@ export interface Room {
   subject: { id: string; name: string; code: string } | null;
   createdAt: string;
   updatedAt: string;
-  /** Present only on the "my rooms" listing. */
-  unread?: number;
 }
 
 export interface CreateRoomBody {

@@ -29,5 +29,8 @@ export type AppSocket = Socket<
 /** Personal room every user joins on connect — used for direct, user-targeted pushes. */
 export const userRoom = (userId: string) => `user:${userId}`;
 
+/** Socket channel for a room's live feed events (new posts, like/comment counts). */
+export const roomChannel = (roomId: string) => `room:${roomId}`;
+
 /** Shared room every admin (it / superadmin) joins — the IT-side of ticket conversations. */
 export const IT_STAFF_ROOM = "it:staff";

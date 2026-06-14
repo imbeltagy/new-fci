@@ -24,7 +24,6 @@ function roomSubtitle(room: Room): string {
 
 function RoomCard({ room }: { room: Room }) {
   const Icon = TYPE_ICON[room.type];
-  const unread = room.unread ?? 0;
 
   return (
     <Link
@@ -38,11 +37,6 @@ function RoomCard({ room }: { room: Room }) {
         <p className="truncate font-medium">{room.name}</p>
         <p className="truncate text-xs text-muted-foreground">{roomSubtitle(room)}</p>
       </div>
-      {unread > 0 && (
-        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-semibold text-primary-foreground">
-          {unread > 99 ? "99+" : unread}
-        </span>
-      )}
     </Link>
   );
 }

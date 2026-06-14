@@ -3,10 +3,12 @@
 import { useQuery } from "@tanstack/react-query";
 
 import {
+  getPost,
+  getPostComments,
   getRoom,
-  getRoomMessages,
   getRoomMutes,
   getRoomPins,
+  getRoomPosts,
   listRooms,
 } from "../actions/rooms.action";
 
@@ -14,7 +16,9 @@ export const ROOM_KEYS = {
   all: ["rooms"] as const,
   list: () => ["rooms", "list"] as const,
   detail: (id: string) => ["rooms", "detail", id] as const,
-  messages: (id: string) => ["rooms", "messages", id] as const,
+  posts: (id: string) => ["rooms", "posts", id] as const,
+  post: (id: string, postId: string) => ["rooms", "post", id, postId] as const,
+  comments: (id: string, postId: string) => ["rooms", "comments", id, postId] as const,
   pins: (id: string) => ["rooms", "pins", id] as const,
   mutes: (id: string) => ["rooms", "mutes", id] as const,
 };
@@ -34,12 +38,28 @@ export function useRoomQuery(id: string) {
   });
 }
 
-/** First (most recent) page of history. Older pages are fetched imperatively on scroll. */
-export function useRoomMessagesQuery(id: string) {
+/** First (most recent) page of the feed. Older pages are fetched imperatively on scroll. */
+export function useRoomPostsQuery(id: string) {
   return useQuery({
-    queryKey: ROOM_KEYS.messages(id),
-    queryFn: () => getRoomMessages(id),
+    queryKey: ROOM_KEYS.posts(id),
+    queryFn: () => getRoomPosts(id),
     enabled: !!id,
+  });
+}
+
+export function usePostQuery(id: string, postId: string) {
+  return useQuery({
+    queryKey: ROOM_KEYS.post(id, postId),
+    queryFn: () => getPost(id, postId),
+    enabled: !!id && !!postId,
+  });
+}
+
+export function usePostCommentsQuery(id: string, postId: string) {
+  return useQuery({
+    queryKey: ROOM_KEYS.comments(id, postId),
+    queryFn: () => getPostComments(id, postId),
+    enabled: !!id && !!postId,
   });
 }
 

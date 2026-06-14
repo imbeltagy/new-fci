@@ -1,4 +1,4 @@
-import { RoomChatView } from "@/sections/community/room-chat-view";
+import { RoomFeedView } from "@/sections/community/room-feed-view";
 
 export default async function RoomPage({
   params,
@@ -6,5 +6,5 @@ export default async function RoomPage({
   params: Promise<{ roomId: string }>;
 }) {
   const { roomId } = await params;
-  return <RoomChatView roomId={roomId} />;
+  return <RoomFeedView roomId={roomId} />;
 }

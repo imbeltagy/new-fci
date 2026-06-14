@@ -2,16 +2,20 @@ import { Role } from "@prisma/client";
 
 import { RoomsService } from "../../rooms/rooms.service";
 import type { AppServer, AppSocket } from "../types";
+import { roomChannel } from "../types";
 
 const svc = new RoomsService();
-
-export const roomChannel = (roomId: string) => `room:${roomId}`;
 
 type Ack = (res: { ok: boolean; error?: string }) => void;
 
 const isAdminRole = (role: Role) => role === Role.it || role === Role.superadmin;
 
-export function registerRoomHandlers(io: AppServer, socket: AppSocket): void {
+/**
+ * Rooms are now feeds: posts, likes and comment counts are pushed to the
+ * `room:{id}` channel by the rooms service after each REST write. The socket's
+ * only job here is to subscribe a member to (and unsubscribe from) that channel.
+ */
+export function registerRoomHandlers(_io: AppServer, socket: AppSocket): void {
   const { sub, role } = socket.data.user;
   const isAdmin = isAdminRole(role);
 
@@ -19,7 +23,6 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket): void {
     try {
       await svc.getRoom(roomId, sub, role, isAdmin);
       socket.join(roomChannel(roomId));
-      if (!isAdmin) await svc.markRead(sub, roomId);
       ack?.({ ok: true });
     } catch (err: any) {
       ack?.({ ok: false, error: err.message ?? "Unable to join room" });
@@ -29,26 +32,4 @@ export function registerRoomHandlers(io: AppServer, socket: AppSocket): void {
   socket.on("room:leave", (roomId: string) => {
     socket.leave(roomChannel(roomId));
   });
-
-  socket.on("room:read", async (roomId: string) => {
-    if (!isAdmin) await svc.markRead(sub, roomId);
-  });
-
-  socket.on(
-    "room:message",
-    async (payload: { roomId: string; content: string }, ack?: Ack) => {
-      try {
-        const message = await svc.postMessage(
-          payload.roomId,
-          sub,
-          role,
-          payload.content,
-        );
-        io.to(roomChannel(payload.roomId)).emit("room:message", message);
-        ack?.({ ok: true });
-      } catch (err: any) {
-        ack?.({ ok: false, error: err.message ?? "Unable to send message" });
-      }
-    },
-  );
 }

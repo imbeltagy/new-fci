@@ -48,6 +48,7 @@ model File {
 
   userAvatar User? @relation("UserAvatar")
   userCover  User? @relation("UserCover")
+  postImage  Post? @relation("PostImage")
 
   @@map("files")
 }
@@ -81,7 +82,9 @@ model User {
   staffMajorAssignments    StaffMajorAssignment[]
   staffSubjectAssignments  StaffSubjectAssignment[]
   subjectEnrollments       SubjectEnrollment[]
-  messages                 Message[]
+  posts                    Post[]
+  comments                 Comment[]
+  postLikes                PostLike[]
   mutedRooms               MutedUser[]
   conversationsAsUser1     Conversation[]            @relation("ConvUser1")
   conversationsAsUser2     Conversation[]            @relation("ConvUser2")
@@ -242,7 +245,7 @@ model Room {
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 
-  messages   Message[]
+  posts      Post[]
   mutedUsers MutedUser[]
 
   @@unique([type, joinYearId, majorId])
@@ -251,32 +254,67 @@ model Room {
   @@map("rooms")
 }
 
-model Message {
+model Post {
   id        String    @id @default(uuid())
   roomId    String
   room      Room      @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  senderId  String
-  sender    User      @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
   content   String
+  imageId   String?   @unique
+  image     File?     @relation("PostImage", fields: [imageId], references: [id], onDelete: SetNull)
+  likeCount Int       @default(0)
   deletedAt DateTime?
   createdAt DateTime  @default(now())
 
-  pinned PinnedMessage?
+  comments Comment[]
+  likes    PostLike[]
+  pinned   PinnedPost?
 
   @@index([roomId, createdAt])
-  @@map("messages")
+  @@map("posts")
 }
 
-model PinnedMessage {
+model PostLike {
+  id        String   @id @default(uuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+  @@index([postId])
+  @@map("post_likes")
+}
+
+model Comment {
+  id        String    @id @default(uuid())
+  postId    String
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  content   String
+  parentId  String?
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[] @relation("CommentReplies")
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([postId, createdAt])
+  @@map("comments")
+}
+
+model PinnedPost {
   id         String   @id @default(uuid())
   roomId     String
-  messageId  String   @unique
-  message    Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  postId     String   @unique
+  post       Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   pinnedById String
   createdAt  DateTime @default(now())
 
   @@index([roomId])
-  @@map("pinned_messages")
+  @@map("pinned_posts")
 }
 
 model MutedUser {
