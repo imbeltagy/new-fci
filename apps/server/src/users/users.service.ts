@@ -143,6 +143,20 @@ export class UsersService {
     await this.repo.hardDelete(id);
   }
 
+  async getPublicProfile(email: string) {
+    const user = await this.repo.findByEmail(email);
+    if (!user) throw Object.assign(new Error("User not found"), { status: 404 });
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      avatarUrl: user.avatar?.url ?? null,
+      majorId: user.majorId,
+      joinYearId: user.joinYearId,
+    };
+  }
+
   async getMySubjects(userId: string, role: string) {
     if (role === "student") {
       return { subjects: await this.repo.findStudentSubjects(userId) };

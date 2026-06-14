@@ -5,6 +5,7 @@ import { api } from "../lib/api-client";
 import type {
   CreateUserBody,
   ListUsersFilter,
+  PublicProfile,
   UpdateMeBody,
   UpdateUserBody,
   User,
@@ -60,4 +61,8 @@ export async function updateUser(id: string, body: UpdateUserBody) {
 
 export async function deleteUser(id: string) {
   return api.delete<null>(API_ROUTES.users.deleteById(id));
+}
+
+export async function getUserProfile(email: string) {
+  return api.get<{ profile: PublicProfile }>(API_ROUTES.users.profile(email));
 }

@@ -107,6 +107,7 @@ export class SubjectsService {
       staff: detail.staffAssignments.map((a) => ({
         id: a.user.id,
         name: a.user.name,
+        email: a.user.email,
         role: a.user.role,
         avatarUrl: a.user.avatar?.url ?? null,
       })),

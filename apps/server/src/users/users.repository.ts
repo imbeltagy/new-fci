@@ -72,6 +72,21 @@ export class UsersRepository {
     });
   }
 
+  async findByEmail(email: string) {
+    return this.db.user.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        avatar: fileSelect,
+        joinYearId: true,
+        majorId: true,
+      },
+    });
+  }
+
   async findAvatarCoverIds(id: string) {
     return this.db.user.findUnique({
       where: { id },

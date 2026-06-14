@@ -88,6 +88,7 @@ export class MajorsService {
       teachers: detail.teachers.map((t) => ({
         id: t.user.id,
         name: t.user.name,
+        email: t.user.email,
         role: t.user.role,
         avatarUrl: t.user.avatar?.url ?? null,
       })),

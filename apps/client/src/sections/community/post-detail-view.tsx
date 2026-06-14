@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Heart, Send, Trash2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -69,7 +70,6 @@ export function PostDetailView({ roomId, postId }: { roomId: string; postId: str
     queryClient.invalidateQueries({ queryKey: ROOM_KEYS.comments(roomId, postId) });
   }
 
-  // Live: like count + comment count for this post; navigate away if it's removed.
   useRoomFeed(roomId, {
     onLike: (e) => {
       if (e.postId === postId) setPost((p) => (p ? { ...p, likeCount: e.likeCount } : p));
@@ -125,7 +125,7 @@ export function PostDetailView({ roomId, postId }: { roomId: string; postId: str
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-background">
+    <div className="fixed inset-x-0 top-0 bottom-16 z-40 flex flex-col bg-background">
       <header className="flex h-14 shrink-0 items-center gap-2 border-b bg-card px-3">
         <Button variant="ghost" size="icon" onClick={() => router.push(`/community/${roomId}`)}>
           <ArrowLeft className="h-5 w-5" />
@@ -139,16 +139,24 @@ export function PostDetailView({ roomId, postId }: { roomId: string; postId: str
             className={cn("space-y-3 border-b p-4", post.isStaff && "border-l-2 border-l-primary")}
           >
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-xs font-semibold text-muted-foreground">
+              <Link
+                href={`/users/${encodeURIComponent(post.author.email)}`}
+                className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-xs font-semibold text-muted-foreground"
+              >
                 {post.author.avatarUrl ? (
                   <img src={post.author.avatarUrl} alt={post.author.name} className="h-full w-full object-cover" />
                 ) : (
                   initials(post.author.name)
                 )}
-              </div>
+              </Link>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="truncate text-sm font-semibold">{post.author.name}</span>
+                  <Link
+                    href={`/users/${encodeURIComponent(post.author.email)}`}
+                    className="truncate text-sm font-semibold hover:underline"
+                  >
+                    {post.author.name}
+                  </Link>
                   {post.isStaff && (
                     <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
                       Faculty
@@ -173,7 +181,7 @@ export function PostDetailView({ roomId, postId }: { roomId: string; postId: str
               <p className="whitespace-pre-wrap break-words text-sm">{post.content}</p>
             )}
             {post.imageUrl && (
-              <img src={post.imageUrl} alt="" className="w-full rounded-lg object-cover" />
+              <img src={post.imageUrl} alt="" className="w-full rounded-lg object-contain bg-muted" />
             )}
 
             <div className="flex items-center gap-1">
@@ -188,7 +196,6 @@ export function PostDetailView({ roomId, postId }: { roomId: string; postId: str
           </article>
         )}
 
-        {/* Comments */}
         <div className="space-y-1 p-3">
           {commentsLoading && <p className="text-sm text-muted-foreground">Loading comments...</p>}
           {!commentsLoading && tree.length === 0 && (
@@ -210,7 +217,6 @@ export function PostDetailView({ roomId, postId }: { roomId: string; postId: str
         </div>
       </div>
 
-      {/* Top-level comment composer */}
       <div className="flex shrink-0 items-center gap-2 border-t bg-card p-3">
         <Input
           value={draft}

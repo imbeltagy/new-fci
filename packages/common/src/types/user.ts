@@ -22,6 +22,16 @@ export interface User {
   updatedAt?: string;
 }
 
+export interface PublicProfile {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  avatarUrl: string | null;
+  majorId: string | null;
+  joinYearId: string | null;
+}
+
 export interface CreateUserBody {
   email: string;
   name: string;

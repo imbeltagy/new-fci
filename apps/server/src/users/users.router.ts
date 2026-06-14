@@ -56,6 +56,13 @@ usersRouter.post(
 // Self-profile — accepts both session (admin) and JWT (client). Must be before /:id.
 usersRouter.get("/me", authSelf, usersController.getMe);
 
+// Public profile by email — accessible to any authenticated client.
+usersRouter.get(
+  "/profile/:email",
+  auth({ authorization: "jwt", roles: anyClient }),
+  usersController.getUserProfile,
+);
+
 usersRouter.get(
   "/me/subjects",
   auth({ authorization: "jwt", roles: anyClient }),

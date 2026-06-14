@@ -13,7 +13,7 @@ const TABS = [
   { label: "Settings", href: "/settings", icon: Settings },
 ] as const;
 
-const NON_HOME_ROOTS = ["/community", "/chat", "/settings"];
+const NON_HOME_ROOTS = ["/community", "/chat", "/settings", "/users"];
 
 function isTabActive(href: string, pathname: string) {
   if (href === "/") {

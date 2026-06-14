@@ -105,6 +105,15 @@ export async function updateUser(req: Request, res: Response) {
   }
 }
 
+export async function getUserProfile(req: Request, res: Response) {
+  try {
+    const profile = await usersService.getPublicProfile(req.params["email"] as string);
+    res.json({ profile });
+  } catch (err: any) {
+    res.status(err.status ?? 500).json({ message: err.message });
+  }
+}
+
 export async function getMySubjects(req: Request, res: Response) {
   try {
     res.json(await usersService.getMySubjects(req.user!.sub, req.user!.role));

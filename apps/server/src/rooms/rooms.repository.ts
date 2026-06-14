@@ -5,7 +5,7 @@ import { getPrismaClient } from "../db/postgres";
 const fileSelect = { select: { id: true, url: true } } as const;
 
 const authorSelect = {
-  select: { id: true, name: true, role: true, avatar: fileSelect },
+  select: { id: true, name: true, email: true, role: true, avatar: fileSelect },
 } as const;
 
 export interface MembershipContext {

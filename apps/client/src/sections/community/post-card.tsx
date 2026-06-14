@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Heart, MessageCircle, Pin, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -95,16 +96,24 @@ export function PostCard({
     >
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-xs font-semibold text-muted-foreground">
+        <Link
+          href={`/users/${encodeURIComponent(post.author.email)}`}
+          className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-xs font-semibold text-muted-foreground"
+        >
           {post.author.avatarUrl ? (
             <img src={post.author.avatarUrl} alt={post.author.name} className="h-full w-full object-cover" />
           ) : (
             initials(post.author.name)
           )}
-        </div>
+        </Link>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <span className="truncate text-sm font-semibold">{post.author.name}</span>
+            <Link
+              href={`/users/${encodeURIComponent(post.author.email)}`}
+              className="truncate text-sm font-semibold hover:underline"
+            >
+              {post.author.name}
+            </Link>
             {post.isStaff && (
               <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
                 Faculty
@@ -126,7 +135,7 @@ export function PostCard({
         <img
           src={post.imageUrl}
           alt=""
-          className="max-h-96 w-full rounded-lg object-cover"
+          className="max-h-96 w-full rounded-lg object-contain bg-muted"
           onClick={openDetail}
         />
       )}

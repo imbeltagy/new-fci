@@ -28,8 +28,8 @@ export interface MajorStaffMember {
 export interface MajorDetailPerson {
   id: string;
   name: string;
+  email: string;
   role?: string;
-  email?: string;
   avatarUrl: string | null;
 }
 

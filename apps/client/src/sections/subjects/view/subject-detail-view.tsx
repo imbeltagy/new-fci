@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, MessagesSquare } from "lucide-react";
 
@@ -43,11 +44,16 @@ function Avatar({ url, name, className }: { url: string | null; name: string; cl
 function StaffRow({ person, showMessage }: { person: SubjectDetailStaff; showMessage: boolean }) {
   return (
     <div className="flex items-center gap-3 rounded-lg border bg-card p-3">
-      <Avatar url={person.avatarUrl} name={person.name} />
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">{person.name}</p>
+      <Link href={`/users/${encodeURIComponent(person.email)}`} className="flex shrink-0">
+        <Avatar url={person.avatarUrl} name={person.name} />
+      </Link>
+      <Link
+        href={`/users/${encodeURIComponent(person.email)}`}
+        className="min-w-0 flex-1"
+      >
+        <p className="truncate text-sm font-medium hover:underline">{person.name}</p>
         <p className="text-xs text-muted-foreground">{ROLE_LABEL[person.role] ?? person.role}</p>
-      </div>
+      </Link>
       {showMessage && <MessageButton userId={person.id} />}
     </div>
   );
@@ -56,11 +62,16 @@ function StaffRow({ person, showMessage }: { person: SubjectDetailStaff; showMes
 function StudentRow({ person, showMessage }: { person: SubjectDetailStudent; showMessage: boolean }) {
   return (
     <div className="flex items-center gap-3 rounded-lg border bg-card p-3">
-      <Avatar url={person.avatarUrl} name={person.name} className="h-8 w-8" />
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">{person.name}</p>
+      <Link href={`/users/${encodeURIComponent(person.email)}`} className="flex shrink-0">
+        <Avatar url={person.avatarUrl} name={person.name} className="h-8 w-8" />
+      </Link>
+      <Link
+        href={`/users/${encodeURIComponent(person.email)}`}
+        className="min-w-0 flex-1"
+      >
+        <p className="truncate text-sm font-medium hover:underline">{person.name}</p>
         <p className="truncate text-xs text-muted-foreground">{person.email}</p>
-      </div>
+      </Link>
       {showMessage && <MessageButton userId={person.id} />}
     </div>
   );

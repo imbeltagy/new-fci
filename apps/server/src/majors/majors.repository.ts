@@ -67,7 +67,7 @@ export class MajorsRepository {
       }),
       this.db.staffMajorAssignment.findMany({
         where: { majorId, joinYearId },
-        include: { user: { select: { id: true, name: true, role: true, avatar } } },
+        include: { user: { select: { id: true, name: true, email: true, role: true, avatar } } },
         orderBy: { createdAt: "asc" },
       }),
       this.db.user.findMany({

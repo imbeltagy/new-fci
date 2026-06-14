@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { getMe, getUser, listUsers, updateMe } from "../actions/users.action";
+import { getMe, getUser, getUserProfile, listUsers, updateMe } from "../actions/users.action";
 import type { ListUsersFilter, UpdateMeBody } from "../types/user";
 
 export const USER_KEYS = {
@@ -10,6 +10,7 @@ export const USER_KEYS = {
   list: (filter?: ListUsersFilter) => ["users", "list", filter] as const,
   detail: (id: string) => ["users", "detail", id] as const,
   me: () => ["users", "me"] as const,
+  profile: (email: string) => ["users", "profile", email] as const,
 };
 
 export function useListUsersQuery(filter?: ListUsersFilter) {
@@ -31,6 +32,14 @@ export function useGetMeQuery() {
   return useQuery({
     queryKey: USER_KEYS.me(),
     queryFn: getMe,
+  });
+}
+
+export function useUserProfileQuery(email: string) {
+  return useQuery({
+    queryKey: USER_KEYS.profile(email),
+    queryFn: () => getUserProfile(email),
+    enabled: !!email,
   });
 }
 

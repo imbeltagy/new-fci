@@ -107,7 +107,7 @@ export function DmChatView({ conversationId }: { conversationId: string }) {
   const other = convData?.data?.conversation.other;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-background">
+    <div className="fixed inset-x-0 top-0 bottom-16 z-40 flex flex-col bg-background">
       <header className="flex h-14 shrink-0 items-center gap-2 border-b bg-card px-3">
         <Button variant="ghost" size="icon" onClick={() => router.push("/chat")}>
           <ArrowLeft className="h-5 w-5" />

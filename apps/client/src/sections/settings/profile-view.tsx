@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Link } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@repo/common/components/ui/button";
@@ -88,6 +89,13 @@ export function ProfileView() {
 
   const avatarUrl = user?.avatar?.url;
 
+  function copyLink() {
+    const email = user?.email;
+    if (!email) return;
+    const url = `${window.location.origin}/users/${encodeURIComponent(email)}`;
+    navigator.clipboard.writeText(url).then(() => toast.success("Link copied!"));
+  }
+
   return (
     <div className="space-y-8 py-4">
       {/* Avatar */}
@@ -111,6 +119,10 @@ export function ProfileView() {
           )}
         </button>
         <p className="text-xs text-muted-foreground">Tap to change avatar</p>
+        <Button variant="outline" size="sm" onClick={copyLink} className="gap-2">
+          <Link className="h-4 w-4" />
+          Copy profile link
+        </Button>
         <input
           ref={fileInputRef}
           type="file"

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { MessageSquare, Plus, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { LayoutList, Plus, Trash2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -33,7 +34,6 @@ import {
 import { ROOM_KEYS, useListRoomsQuery } from "@repo/common/queries/rooms.query";
 import type { Room, RoomType } from "@repo/common/types/room";
 import { PageHeader } from "@/components/control-panel/page-header";
-import { RoomDetailPanel } from "../room-detail-panel";
 import { RoomForm } from "../room-form";
 
 const TYPE_LABEL: Record<RoomType, string> = {
@@ -56,9 +56,9 @@ function roomScope(room: Room): string {
 }
 
 export function RoomsListView() {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
-  const [detailTarget, setDetailTarget] = useState<Room | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Room | null>(null);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<RoomType | "all">("all");
@@ -152,9 +152,13 @@ export function RoomsListView() {
                 <TableCell className="text-muted-foreground">{roomScope(room)}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-1">
-                    <Button variant="ghost" size="sm" onClick={() => setDetailTarget(room)}>
-                      <MessageSquare className="mr-1 h-3.5 w-3.5" />
-                      Moderate
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => router.push(`/rooms/${room.id}`)}
+                    >
+                      <LayoutList className="mr-1 h-3.5 w-3.5" />
+                      View feed
                     </Button>
                     <Button
                       variant="ghost"
@@ -187,19 +191,10 @@ export function RoomsListView() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={!!detailTarget} onOpenChange={(v) => !v && setDetailTarget(null)}>
-        <DialogContent className="max-h-[85vh] max-w-2xl overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Moderate — {detailTarget?.name}</DialogTitle>
-          </DialogHeader>
-          {detailTarget && <RoomDetailPanel room={detailTarget} />}
-        </DialogContent>
-      </Dialog>
-
       <ConfirmDialog
         open={!!deleteTarget}
         title="Delete Room"
-        message={`Delete "${deleteTarget?.name ?? ""}"? All its messages will be removed.`}
+        message={`Delete "${deleteTarget?.name ?? ""}"? All its posts will be removed.`}
         onClose={() => setDeleteTarget(null)}
         onSubmit={handleDelete}
       />

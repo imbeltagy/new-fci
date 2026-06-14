@@ -39,6 +39,7 @@ export class RoomsService {
       author: {
         id: p.author.id,
         name: p.author.name,
+        email: p.author.email,
         role: p.author.role,
         avatarUrl: p.author.avatar?.url ?? null,
       },
@@ -73,6 +74,7 @@ export class RoomsService {
       author: {
         id: c.author.id,
         name: c.author.name,
+        email: c.author.email,
         role: c.author.role,
         avatarUrl: c.author.avatar?.url ?? null,
         isStaff: isStaffRole(c.author.role),

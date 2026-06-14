@@ -111,6 +111,7 @@ export class SubjectsRepository {
               select: {
                 id: true,
                 name: true,
+                email: true,
                 role: true,
                 avatar: { select: { id: true, url: true } },
               },

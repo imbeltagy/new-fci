@@ -3,6 +3,7 @@ import type { UserRole } from "./user";
 export interface PostAuthor {
   id: string;
   name: string;
+  email: string;
   role: UserRole;
   avatarUrl: string | null;
 }

@@ -24,6 +24,7 @@ export const API_ROUTES = {
     getById: (id: string) => `/users/${id}`,
     updateById: (id: string) => `/users/${id}`,
     deleteById: (id: string) => `/users/${id}`,
+    profile: (email: string) => `/users/profile/${encodeURIComponent(email)}`,
   },
 
   accessGroups: {

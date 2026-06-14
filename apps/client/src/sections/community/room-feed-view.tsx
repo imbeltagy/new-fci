@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Pin } from "lucide-react";
+import { ArrowLeft, Pin, Plus } from "lucide-react";
 
 import { getRoomPosts } from "@repo/common/actions/rooms.action";
 import { Button } from "@repo/common/components/ui/button";
@@ -37,6 +37,7 @@ export function RoomFeedView({ roomId }: { roomId: string }) {
   const [hasMore, setHasMore] = useState(false);
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [pinsOpen, setPinsOpen] = useState(false);
+  const [composeOpen, setComposeOpen] = useState(false);
   const seededRef = useRef(false);
 
   const { data: pinsData } = useRoomPinsQuery(roomId, pinsOpen);
@@ -73,6 +74,7 @@ export function RoomFeedView({ roomId }: { roomId: string }) {
   }
   function handleCreated(post: Post) {
     setPosts((prev) => (prev.some((x) => x.id === post.id) ? prev : [post, ...prev]));
+    setComposeOpen(false);
   }
 
   async function loadOlder() {
@@ -93,7 +95,7 @@ export function RoomFeedView({ roomId }: { roomId: string }) {
   const room = roomData?.data?.room;
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-background">
+    <div className="fixed inset-x-0 top-0 bottom-16 z-40 flex flex-col bg-background">
       <header className="flex h-14 shrink-0 items-center gap-2 border-b bg-card px-3">
         <Button variant="ghost" size="icon" onClick={() => router.push("/community")}>
           <ArrowLeft className="h-5 w-5" />
@@ -105,8 +107,6 @@ export function RoomFeedView({ roomId }: { roomId: string }) {
       </header>
 
       <div className="flex-1 space-y-3 overflow-y-auto px-3 py-4">
-        <PostComposer roomId={roomId} onCreated={handleCreated} />
-
         {posts.map((p) => (
           <PostCard
             key={p.id}
@@ -134,6 +134,26 @@ export function RoomFeedView({ roomId }: { roomId: string }) {
         )}
       </div>
 
+      {/* Floating compose button */}
+      <button
+        onClick={() => setComposeOpen(true)}
+        className="absolute bottom-4 right-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform hover:scale-105 active:scale-95"
+        aria-label="New post"
+      >
+        <Plus className="h-6 w-6" />
+      </button>
+
+      {/* Compose dialog */}
+      <Dialog open={composeOpen} onOpenChange={(v) => !v && setComposeOpen(false)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>New Post</DialogTitle>
+          </DialogHeader>
+          <PostComposer roomId={roomId} onCreated={handleCreated} />
+        </DialogContent>
+      </Dialog>
+
+      {/* Pins dialog */}
       <Dialog open={pinsOpen} onOpenChange={setPinsOpen}>
         <DialogContent className="max-h-[80vh] overflow-y-auto">
           <DialogHeader>
