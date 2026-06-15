@@ -35,6 +35,11 @@ enum TicketStatus {
   done
 }
 
+enum AssessmentType {
+  quiz
+  assignment
+}
+
 model File {
   id        String    @id @default(uuid())
   key       String    @unique
@@ -46,9 +51,10 @@ model File {
   createdAt DateTime  @default(now()) @map("created_at")
   deletedAt DateTime? @map("deleted_at")
 
-  userAvatar User? @relation("UserAvatar")
-  userCover  User? @relation("UserCover")
-  postImage  Post? @relation("PostImage")
+  userAvatar     User?                    @relation("UserAvatar")
+  userCover      User?                    @relation("UserCover")
+  postImage      Post?                    @relation("PostImage")
+  submissionFile AssignmentSubmissionFile? @relation("SubmissionFile")
 
   @@map("files")
 }
@@ -91,6 +97,9 @@ model User {
   directMessages           DirectMessage[]
   tickets                  Ticket[]
   ticketMessages           TicketMessage[]
+  createdAssessments       Assessment[]          @relation("AssessmentCreator")
+  quizSubmissions          QuizSubmission[]      @relation("QuizStudent")
+  assignmentSubmissions    AssignmentSubmission[] @relation("AssignmentStudent")
 
   @@map("users")
 }
@@ -178,6 +187,7 @@ model Subject {
   enrollments      SubjectEnrollment[]
   staffAssignments StaffSubjectAssignment[]
   room             Room?
+  assessments      Assessment[]
 
   @@map("subjects")
 }
@@ -388,4 +398,132 @@ model TicketMessage {
 
   @@index([ticketId, createdAt])
   @@map("ticket_messages")
+}
+
+model Assessment {
+  id           String         @id @default(uuid())
+  type         AssessmentType
+  subjectId    String         @map("subject_id")
+  subject      Subject        @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  creatorId    String         @map("creator_id")
+  creator      User           @relation("AssessmentCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  title        String
+  startDate    DateTime       @map("start_date")
+  endDate      DateTime       @map("end_date")
+  isVisible    Boolean        @default(false) @map("is_visible")
+  publishedAt  DateTime?      @map("published_at")
+  markReadable Boolean        @default(false) @map("mark_readable")
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+
+  quiz                  Quiz?
+  assignmentDetails     AssignmentDetails?
+  quizSubmissions       QuizSubmission[]
+  assignmentSubmissions AssignmentSubmission[]
+
+  @@index([subjectId])
+  @@map("assessments")
+}
+
+model Quiz {
+  assessmentId String     @id @map("assessment_id")
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+
+  questions QuizQuestion[]
+
+  @@map("quizzes")
+}
+
+model QuizQuestion {
+  id            String   @id @default(uuid())
+  quizId        String   @map("quiz_id")
+  quiz          Quiz     @relation(fields: [quizId], references: [assessmentId], onDelete: Cascade)
+  text          String
+  degree        Int      @default(1)
+  correctOption Int      @map("correct_option")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  options QuizOption[]
+  answers QuizAnswer[]
+
+  @@index([quizId])
+  @@map("quiz_questions")
+}
+
+model QuizOption {
+  id         String       @id @default(uuid())
+  questionId String       @map("question_id")
+  question   QuizQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  text       String
+  index      Int
+
+  @@index([questionId])
+  @@map("quiz_options")
+}
+
+model QuizSubmission {
+  id           String   @id @default(uuid())
+  assessmentId String   @map("assessment_id")
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  studentId    String   @map("student_id")
+  student      User     @relation("QuizStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  mark         Int
+  submittedAt  DateTime @default(now()) @map("submitted_at")
+
+  answers QuizAnswer[]
+
+  @@unique([assessmentId, studentId])
+  @@index([assessmentId])
+  @@map("quiz_submissions")
+}
+
+model QuizAnswer {
+  id             String         @id @default(uuid())
+  submissionId   String         @map("submission_id")
+  submission     QuizSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  questionId     String         @map("question_id")
+  question       QuizQuestion   @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  selectedOption Int            @map("selected_option")
+  isCorrect      Boolean        @map("is_correct")
+
+  @@unique([submissionId, questionId])
+  @@index([submissionId])
+  @@map("quiz_answers")
+}
+
+model AssignmentDetails {
+  assessmentId String     @id @map("assessment_id")
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  totalMark    Int        @map("total_mark")
+
+  @@map("assignment_details")
+}
+
+model AssignmentSubmission {
+  id           String     @id @default(uuid())
+  assessmentId String     @map("assessment_id")
+  assessment   Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  studentId    String     @map("student_id")
+  student      User       @relation("AssignmentStudent", fields: [studentId], references: [id], onDelete: Cascade)
+  mark         Int?
+  submittedAt  DateTime   @default(now()) @map("submitted_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  files AssignmentSubmissionFile[]
+
+  @@unique([assessmentId, studentId])
+  @@index([assessmentId])
+  @@map("assignment_submissions")
+}
+
+model AssignmentSubmissionFile {
+  id           String               @id @default(uuid())
+  submissionId String               @map("submission_id")
+  submission   AssignmentSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  fileId       String               @unique @map("file_id")
+  file         File                 @relation("SubmissionFile", fields: [fileId], references: [id], onDelete: Cascade)
+  createdAt    DateTime             @default(now()) @map("created_at")
+
+  @@index([submissionId])
+  @@map("assignment_submission_files")
 }

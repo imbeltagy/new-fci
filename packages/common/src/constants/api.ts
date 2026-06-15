@@ -105,6 +105,18 @@ export const API_ROUTES = {
     unmute: (id: string, userId: string) => `/rooms/${id}/mute/${userId}`,
   },
 
+  assessments: {
+    list: "/assessments",
+    create: "/assessments",
+    getById: (id: string) => `/assessments/${id}`,
+    updateById: (id: string) => `/assessments/${id}`,
+    deleteById: (id: string) => `/assessments/${id}`,
+    questions: (id: string) => `/assessments/${id}/questions`,
+    question: (id: string, qId: string) => `/assessments/${id}/questions/${qId}`,
+    submissions: (id: string) => `/assessments/${id}/submissions`,
+    gradeSubmission: (id: string, sId: string) => `/assessments/${id}/submissions/${sId}/mark`,
+  },
+
   assignments: {
     get: (userId: string) => `/users/${userId}/assignments`,
     assignJoinYear: (userId: string, joinYearId: string) =>

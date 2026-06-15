@@ -11,6 +11,7 @@ import { useSubjectDetailQuery } from "@repo/common/queries/subjects.query";
 import { useAuthStore } from "@repo/common/stores/auth.store";
 import type { SubjectDetailStaff, SubjectDetailStudent } from "@repo/common/types/subject";
 import { MessageButton } from "@/components/message-button";
+import { SubjectAssessmentsSection } from "@/sections/assessments/subject-assessments-section";
 
 const SEMESTER_LABEL: Record<string, string> = {
   first: "First Semester",
@@ -134,6 +135,8 @@ export function SubjectDetailView({ subjectId }: { subjectId: string }) {
           </div>
         )}
       </div>
+
+      <SubjectAssessmentsSection subjectId={subjectId} />
 
       <div className="space-y-2">
         <h2 className="text-sm font-semibold text-muted-foreground">

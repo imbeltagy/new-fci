@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   BookOpen,
   CalendarDays,
+  ClipboardList,
   GraduationCap,
   LayoutDashboard,
   LifeBuoy,
@@ -22,6 +23,7 @@ const NAV_ITEMS = [
   { name: "Majors", path: "/majors", icon: GraduationCap },
   { name: "Subjects", path: "/subjects", icon: BookOpen },
   { name: "Channels", path: "/rooms", icon: MessagesSquare },
+  { name: "Assessments", path: "/assessments", icon: ClipboardList },
   { name: "Tickets", path: "/tickets", icon: LifeBuoy },
 ];
 

@@ -10,6 +10,7 @@ import swaggerUi from "swagger-ui-express";
 import { Role } from "@prisma/client";
 
 import { accessGroupsRouter } from "./access-groups/access-groups.router";
+import { assessmentsRouter } from "./assessments/assessments.router";
 import { conversationsRouter } from "./conversations/conversations.router";
 import { FilesService } from "./files/files.service";
 import { assignmentsRouter } from "./assignments/assignments.router";
@@ -58,6 +59,7 @@ app.use("/subjects", subjectsRouter);
 app.use("/rooms", roomsRouter);
 app.use("/conversations", conversationsRouter);
 app.use("/tickets", ticketsRouter);
+app.use("/assessments", assessmentsRouter);
 
 app.get(
   "/permissions-config",

@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { PrismaClient, Semester } from "@prisma/client";
+import { AssessmentType, PrismaClient, Semester } from "@prisma/client";
 import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
@@ -201,6 +201,297 @@ async function main() {
     }
   }
   console.log(`✓ Students: 10 (4 CS, 3 IT, 3 AI), all enrolled in their major's subjects`);
+
+  // ── Assessments ──────────────────────────────────────────────────────────────
+  const teacher1 = (await prisma.user.findUnique({ where: { email: "teacher1@fci.edu" } }))!;
+  const teacher2 = (await prisma.user.findUnique({ where: { email: "teacher2@fci.edu" } }))!;
+
+  const now = new Date();
+  const past = (days: number) => new Date(now.getTime() - days * 86400_000);
+  const future = (days: number) => new Date(now.getTime() + days * 86400_000);
+
+  interface QuizSeedDef {
+    type: "quiz";
+    title: string;
+    subjectCode: string;
+    creatorEmail: string;
+    startDate: Date;
+    endDate: Date;
+    isVisible: boolean;
+    publishedAt: Date | null;
+    markReadable: boolean;
+    questions: { text: string; degree: number; options: string[]; correctOption: number }[];
+  }
+  interface AssignmentSeedDef {
+    type: "assignment";
+    title: string;
+    subjectCode: string;
+    creatorEmail: string;
+    startDate: Date;
+    endDate: Date;
+    isVisible: boolean;
+    publishedAt: Date | null;
+    markReadable: boolean;
+    totalMark: number;
+  }
+  type AssessmentSeedDef = QuizSeedDef | AssignmentSeedDef;
+
+  const assessmentDefs: AssessmentSeedDef[] = [
+    // CS101 quiz — open now, visible, mark not readable
+    {
+      type: "quiz",
+      title: "Midterm Quiz — Intro to Programming",
+      subjectCode: "CS101",
+      creatorEmail: "teacher1@fci.edu",
+      startDate: past(1),
+      endDate: future(2),
+      isVisible: true,
+      publishedAt: past(3),
+      markReadable: false,
+      questions: [
+        {
+          text: "Which keyword declares a variable in Python?",
+          degree: 2,
+          options: ["var", "let", "int", "No keyword needed"],
+          correctOption: 3,
+        },
+        {
+          text: "What does `len([1, 2, 3])` return?",
+          degree: 1,
+          options: ["2", "3", "4", "Error"],
+          correctOption: 1,
+        },
+        {
+          text: "Which operator checks equality in Python?",
+          degree: 1,
+          options: ["=", "==", "===", "!="],
+          correctOption: 1,
+        },
+      ],
+    },
+    // CS102 quiz — upcoming, visible
+    {
+      type: "quiz",
+      title: "Data Structures — Quiz 1",
+      subjectCode: "CS102",
+      creatorEmail: "teacher1@fci.edu",
+      startDate: future(3),
+      endDate: future(4),
+      isVisible: true,
+      publishedAt: past(2),
+      markReadable: false,
+      questions: [
+        {
+          text: "Which data structure uses LIFO order?",
+          degree: 2,
+          options: ["Queue", "Stack", "Array", "Linked List"],
+          correctOption: 1,
+        },
+        {
+          text: "What is the time complexity of binary search?",
+          degree: 2,
+          options: ["O(n)", "O(n²)", "O(log n)", "O(1)"],
+          correctOption: 2,
+        },
+      ],
+    },
+    // CS101 assignment — open, marks released
+    {
+      type: "assignment",
+      title: "Assignment 1 — Hello World Program",
+      subjectCode: "CS101",
+      creatorEmail: "teacher1@fci.edu",
+      startDate: past(7),
+      endDate: future(1),
+      isVisible: true,
+      publishedAt: past(8),
+      markReadable: true,
+      totalMark: 20,
+    },
+    // AI101 quiz — ended, marks released
+    {
+      type: "quiz",
+      title: "Python Basics Quiz",
+      subjectCode: "AI101",
+      creatorEmail: "teacher2@fci.edu",
+      startDate: past(10),
+      endDate: past(9),
+      isVisible: true,
+      publishedAt: past(12),
+      markReadable: true,
+      questions: [
+        {
+          text: "What does `type(3.14)` return?",
+          degree: 2,
+          options: ["int", "float", "str", "double"],
+          correctOption: 1,
+        },
+        {
+          text: "Which function prints output in Python?",
+          degree: 1,
+          options: ["echo()", "console.log()", "print()", "printf()"],
+          correctOption: 2,
+        },
+      ],
+    },
+    // AI102 assignment — upcoming
+    {
+      type: "assignment",
+      title: "ML Assignment — Linear Regression",
+      subjectCode: "AI102",
+      creatorEmail: "teacher2@fci.edu",
+      startDate: future(2),
+      endDate: future(10),
+      isVisible: true,
+      publishedAt: past(1),
+      markReadable: false,
+      totalMark: 50,
+    },
+    // IT101 hidden quiz (not visible yet)
+    {
+      type: "quiz",
+      title: "Networking Fundamentals — Draft Quiz",
+      subjectCode: "IT101",
+      creatorEmail: "subteacher1@fci.edu",
+      startDate: future(5),
+      endDate: future(6),
+      isVisible: false,
+      publishedAt: null,
+      markReadable: false,
+      questions: [
+        {
+          text: "What does IP stand for?",
+          degree: 1,
+          options: ["Internet Protocol", "Internal Port", "Input Packet", "Interface Program"],
+          correctOption: 0,
+        },
+      ],
+    },
+  ];
+
+  const createdAssessments: Record<string, string> = {};
+
+  for (const def of assessmentDefs) {
+    const creatorEmail = def.creatorEmail;
+    const creator = await prisma.user.findUnique({ where: { email: creatorEmail } });
+    if (!creator) continue;
+    const subject = subjects[def.subjectCode];
+    if (!subject) continue;
+
+    const existing = await prisma.assessment.findFirst({
+      where: { title: def.title, subjectId: subject.id },
+    });
+
+    let assessmentId: string;
+    if (existing) {
+      assessmentId = existing.id;
+      console.log(`- Assessment already exists: "${def.title}"`);
+    } else {
+      const assessment = await prisma.assessment.create({
+        data: {
+          type: def.type as AssessmentType,
+          subjectId: subject.id,
+          creatorId: creator.id,
+          title: def.title,
+          startDate: def.startDate,
+          endDate: def.endDate,
+          isVisible: def.isVisible,
+          publishedAt: def.publishedAt,
+          markReadable: def.markReadable,
+        },
+      });
+      assessmentId = assessment.id;
+
+      if (def.type === "quiz") {
+        await prisma.quiz.create({ data: { assessmentId } });
+        for (const q of def.questions) {
+          await prisma.quizQuestion.create({
+            data: {
+              quizId: assessmentId,
+              text: q.text,
+              degree: q.degree,
+              correctOption: q.correctOption,
+              options: { create: q.options.map((text, index) => ({ text, index })) },
+            },
+          });
+        }
+      } else {
+        await prisma.assignmentDetails.create({
+          data: { assessmentId, totalMark: def.totalMark },
+        });
+      }
+
+      console.log(`✓ Assessment: "${def.title}"`);
+    }
+
+    createdAssessments[def.title] = assessmentId;
+  }
+
+  // ── Quiz submissions (students take the open quiz) ──────────────────────────
+  const csStudents = await prisma.user.findMany({ where: { role: "student", major: { code: "CS" } } });
+  const midtermQuizId = createdAssessments["Midterm Quiz — Intro to Programming"];
+
+  if (midtermQuizId) {
+    const questions = await prisma.quizQuestion.findMany({
+      where: { quizId: midtermQuizId },
+      include: { options: true },
+    });
+
+    for (const student of csStudents.slice(0, 2)) {
+      const already = await prisma.quizSubmission.findUnique({
+        where: { assessmentId_studentId: { assessmentId: midtermQuizId, studentId: student.id } },
+      });
+      if (already) continue;
+
+      let mark = 0;
+      const answers = questions.map((q) => {
+        const picked = q.correctOption;
+        const isCorrect = true;
+        mark += q.degree;
+        return { questionId: q.id, selectedOption: picked, isCorrect };
+      });
+
+      await prisma.quizSubmission.create({
+        data: {
+          assessmentId: midtermQuizId,
+          studentId: student.id,
+          mark,
+          answers: { create: answers },
+        },
+      });
+    }
+    console.log(`✓ Quiz submissions: 2 CS students submitted midterm quiz`);
+  }
+
+  // ── AI ended quiz submissions ───────────────────────────────────────────────
+  const aiStudents = await prisma.user.findMany({ where: { role: "student", major: { code: "AI" } } });
+  const aiQuizId = createdAssessments["Python Basics Quiz"];
+
+  if (aiQuizId) {
+    const questions = await prisma.quizQuestion.findMany({
+      where: { quizId: aiQuizId },
+      include: { options: true },
+    });
+
+    for (const student of aiStudents) {
+      const already = await prisma.quizSubmission.findUnique({
+        where: { assessmentId_studentId: { assessmentId: aiQuizId, studentId: student.id } },
+      });
+      if (already) continue;
+
+      let mark = 0;
+      const answers = questions.map((q, i) => {
+        const correct = i % 2 === 0;
+        if (correct) mark += q.degree;
+        return { questionId: q.id, selectedOption: correct ? q.correctOption : (q.correctOption + 1) % q.options.length, isCorrect: correct };
+      });
+
+      await prisma.quizSubmission.create({
+        data: { assessmentId: aiQuizId, studentId: student.id, mark, answers: { create: answers } },
+      });
+    }
+    console.log(`✓ Quiz submissions: ${aiStudents.length} AI students submitted Python Basics Quiz`);
+  }
 
   console.log("\n✅ Seed complete.");
 }

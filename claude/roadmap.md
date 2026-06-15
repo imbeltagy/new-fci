@@ -17,7 +17,7 @@ is needed from the first feature and grows with each one.
 | 1 | Users, auth & RBAC | built | [features/users-auth.md](./features/users-auth.md) |
 | 2 | Join years, majors & subjects | built | [features/subjects-majors.md](./features/subjects-majors.md) |
 | 3 | Channels & community | built | [features/channels-community.md](./features/channels-community.md) |
-| 4 | Assessments (quizzes & assignments) | planned | [features/assessments.md](./features/assessments.md) |
+| 4 | Assessments (quizzes & assignments) | built | [features/assessments.md](./features/assessments.md) |
 | 5 | Announcements | planned | [features/announcements.md](./features/announcements.md) |
 | 6 | Private chat | built | [features/chat.md](./features/chat.md) |
 | 7 | IT tickets | built | [features/it-tickets.md](./features/it-tickets.md) |
